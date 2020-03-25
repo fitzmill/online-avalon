@@ -28,9 +28,17 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Folder Include="Core\" />
+    <Folder Include="Core\Models\" />
+    <Folder Include="Core\Interfaces\" />
+    <Folder Include="Core\Interfaces\Accessors\" />
+    <Folder Include="Accessors\" />
+    <Folder Include="Core\Enums\" />
+    <Folder Include="Core\Interfaces\Engines\" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="$(SpaRoot)**" />
