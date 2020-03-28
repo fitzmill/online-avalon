@@ -8,9 +8,14 @@ namespace online_avalon_web.Engines
     public class PlayerEngine : IPlayerEngine
     {
         private readonly IPlayerAccessor _playerAccessor;
-        public PlayerEngine(IPlayerAccessor playerAccessor)
+        private readonly IGameAccessor _gameAccessor;
+        public PlayerEngine(
+            IPlayerAccessor playerAccessor,
+            IGameAccessor gameAccessor
+        )
         {
             _playerAccessor = playerAccessor;
+            _gameAccessor = gameAccessor;
         }
 
         public void AddPlayerToParty(long gameId, string username)
@@ -49,6 +54,10 @@ namespace online_avalon_web.Engines
             }
 
             alignment = Utilities.GetAlignmentForRole(player.Role);
+
+            var game = _gameAccessor.GetGame(gameId);
+            game.UsernameWithLake = username;
+            _gameAccessor.UpdateGame(game);
 
             return true;
         }
