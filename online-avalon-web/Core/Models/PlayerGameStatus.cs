@@ -12,7 +12,7 @@ namespace online_avalon_web.Core.Models
 
         public RoleEnum PlayerRole { get; set; }
         public long GameId { get; set; }
-        public Dictionary<string, RoleEnum> KnownRoles { get; set; }
+        public IEnumerable<string> KnownUsernames { get; set; }
         public string UsernameWithLake { get; set; }
         public string King { get; set; }
     } 

@@ -9,5 +9,6 @@ namespace online_avalon_web.Core.Interfaces.Engines
         void RemovePlayerFromParty(long gameId, string username);
         void VoteForParty(long gameId, string username, ApprovalVoteOptionsEnum approvalVote);
         void VoteForQuest(long gameId, string username, QuestVoteOptionsEnum questVote);
+        bool TryLakePlayer(long gameId, string username, out AlignmentEnum alignment);
     }
 }

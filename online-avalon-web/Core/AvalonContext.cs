@@ -15,6 +15,7 @@ namespace online_avalon_web.Core
 
         public DbSet<Game> Games { get; set; }
         public DbSet<Player> Players { get; set; }
+        public DbSet<Quest> Quests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,6 +36,18 @@ namespace online_avalon_web.Core
                     .HasForeignKey(e => e.GameId);
                 entity.Property(e => e.Role)
                     .HasConversion(new EnumToStringConverter<RoleEnum>());
+            });
+
+            modelBuilder.Entity<Quest>(entity =>
+            {
+                entity.HasKey(e => e.QuestId);
+                entity.Property(e => e.QuestId)
+                    .ValueGeneratedOnAdd();
+                entity.HasOne(e => e.Game)
+                    .WithMany(e => e.Quests)
+                    .HasForeignKey(e => e.GameId);
+                entity.Property(e => e.QuestResult)
+                    .HasConversion(new EnumToStringConverter<QuestResultEnum>());
             });
         }
     }
