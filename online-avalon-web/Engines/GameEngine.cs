@@ -91,6 +91,7 @@ namespace online_avalon_web.Engines
 
             game.KingUsername = game.Players[kingIndex].Username;
             game.UsernameWithLake = game.Players[lakeIndex].Username;
+            game.Players[lakeIndex].HasHeldLake = true;
             game.QuestNumber = 1;
 
             _gameAccessor.UpdateGame(game);
@@ -216,12 +217,22 @@ namespace online_avalon_web.Engines
                 && game.Quests.Count(q => q.QuestResult == QuestResultEnum.GoodWins) < 3
                 && game.Quests.Count(q => q.QuestResult == QuestResultEnum.EvilWins) < 3)
             {
+                // update quest
                 game.QuestNumber++;
                 _questAccessor.AddQuest(new Quest
                 {
                     QuestNumber = game.QuestNumber,
                     GameId = game.GameId
                 });
+
+                // reset players
+                foreach(Player player in game.Players)
+                {
+                    player.ApprovalVote = null;
+                    player.QuestVote = null;
+                }
+
+                // update game
                 _gameAccessor.UpdateGame(game);
                 newQuestNumber = game.QuestNumber;
                 return true;
