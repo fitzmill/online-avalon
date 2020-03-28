@@ -31,6 +31,13 @@ namespace online_avalon_web.Engines
             _playerAccessor.UpdatePlayer(player);
         }
 
+        public bool TryAssassinatePlayer(long gameId, string username)
+        {
+            var player = _playerAccessor.GetPlayer(gameId, username);
+
+            return player.Role == RoleEnum.Merlin;
+        }
+
         public bool TryLakePlayer(long gameId, string username, out AlignmentEnum? alignment)
         {
             var player = _playerAccessor.GetPlayer(gameId, username);

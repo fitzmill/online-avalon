@@ -8,11 +8,13 @@ namespace online_avalon_web.Core.Interfaces.Engines
     public interface IGameEngine
     {
         /// <summary>
-        /// Create's a game with a specified host
+        /// Tries to create a new game
         /// </summary>
         /// <param name="hostUsername"></param>
-        /// <returns>The game metadata</returns>
-        Game CreateGame(string hostUsername);
+        /// <param name="publicGameId"></param>
+        /// <param name="game">Game if the game is created, null otherwise</param>
+        /// <returns>True if the game can be created, false if the game already exists and is currently active</returns>
+        bool TryCreateGame(string hostUsername, string publicGameId, out Game game);
 
         /// <summary>
         /// Adds a player to the game
@@ -90,5 +92,18 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// <param name="gameId"></param>
         /// <returns>All information about the game</returns>
         Game EndGame(long gameId);
+
+        /// <summary>
+        /// Restarts a finished game and puts it into the pregame mode
+        /// </summary>
+        /// <param name="gameId"></param>
+        /// <returns>The new game</returns>
+        Game RestartGame(long gameId);
+
+        /// <summary>
+        /// Deactivates a currently active game
+        /// </summary>
+        /// <param name="publicGameId"></param>
+        void DeactivateGame(string publicGameId);
     }
 }

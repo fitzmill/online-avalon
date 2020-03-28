@@ -45,5 +45,13 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// <param name="alignment"></param>
         /// <returns></returns>
         bool TryLakePlayer(long gameId, string username, out AlignmentEnum? alignment);
+
+        /// <summary>
+        /// Tries to assassinate player
+        /// </summary>
+        /// <param name="gameId"></param>
+        /// <param name="username">Username to assassinate</param>
+        /// <returns>True if the targeted player is merlin, false otherwise</returns>
+        bool TryAssassinatePlayer(long gameId, string username);
     }
 }

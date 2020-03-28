@@ -12,6 +12,7 @@ namespace online_avalon_web.Core.Models
 
         public long GameId { get; set; }
         public string PublicId { get; set; }
+        public string HostUsername { get; set; }
         public int NumPlayers { get; set; }
         public bool Active { get; set; }
         public GameStatusEnum GameStatus { get; set; }

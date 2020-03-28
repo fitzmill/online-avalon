@@ -27,6 +27,16 @@ namespace online_avalon_web.Engines
         public Game AddPlayerToGame(string username, string publicGameId)
         {
             var game = _gameAccessor.GetGameWithPlayers(publicGameId);
+
+            if (game.GameStatus != GameStatusEnum.PreGame)
+            {
+                throw new InvalidOperationException("Game has already started");
+            }
+            else if (game.Players.Any(p => p.Username == username))
+            {
+                throw new ArgumentException($"There is already a user in the game with the name {username}");
+            }
+
             game.Players.Add(new Player
             {
                 Username = username
@@ -37,23 +47,31 @@ namespace online_avalon_web.Engines
             return game;
         }
 
-        public Game CreateGame(string hostUsername)
+        public bool TryCreateGame(string hostUsername, string publicGameId, out Game game)
         {
-            var game = new Game
+            game = _gameAccessor.GetGameWithPlayers(publicGameId);
+
+            if (game == default(Game) || game.Active == false)
             {
-                Active = true,
-                GameStatus = GameStatusEnum.PreGame,
-                NumPlayers = 1,
-                Players = new List<Player>(new[] { new Player
+                game = new Game
+                {
+                    Active = true,
+                    GameStatus = GameStatusEnum.PreGame,
+                    NumPlayers = 1,
+                    Players = new List<Player>(new[] { new Player
                 {
                     Username = hostUsername
                 } }),
-                QuestNumber = 0
-            };
+                    QuestNumber = 0
+                };
 
-            _gameAccessor.AddGame(game);
+                _gameAccessor.AddGame(game);
 
-            return game;
+                return true;
+            }
+
+            game = null;
+            return false;
         }
 
         public void RemovePlayerFromGame(long gameId, string username)
@@ -67,8 +85,22 @@ namespace online_avalon_web.Engines
                 return;
             }
 
-            _playerAccessor.RemovePlayer(player);
             game.NumPlayers--;
+
+            if (player.Username == game.HostUsername)
+            {
+                if (game.NumPlayers == 0)
+                {
+                    DeactivateGame(game.PublicId);
+                    return;
+                }
+                else
+                {
+                    game.HostUsername = game.Players.First(p => p.Username != game.HostUsername).Username;
+                }
+            }
+
+            _playerAccessor.RemovePlayer(player);
             _gameAccessor.UpdateGame(game);
         }
 
@@ -233,6 +265,9 @@ namespace online_avalon_web.Engines
                 }
 
                 // update game
+                var newKingIndex = (game.Players.FindIndex(p => p.Username == game.KingUsername) + 1) % game.NumPlayers;
+                game.KingUsername = game.Players[newKingIndex].Username;
+
                 _gameAccessor.UpdateGame(game);
                 newQuestNumber = game.QuestNumber;
                 return true;
@@ -273,13 +308,49 @@ namespace online_avalon_web.Engines
 
         public Game EndGame(long gameId)
         {
-            var game = _gameAccessor.GetGameWithPlayers(gameId);
+            var game = _gameAccessor.GetGame(gameId);
 
             game.GameStatus = GameStatusEnum.Finished;
 
             _gameAccessor.UpdateGame(game);
 
             return game;
+        }
+
+        public Game RestartGame(long gameId)
+        {
+            var oldGame = _gameAccessor.GetGameWithPlayers(gameId);
+
+            oldGame.Active = false;
+
+            _gameAccessor.UpdateGame(oldGame);
+
+            var newGame = new Game
+            {
+                Active = true,
+                GameStatus = GameStatusEnum.PreGame,
+                HostUsername = oldGame.HostUsername,
+                NumPlayers = oldGame.NumPlayers,
+                PublicId = oldGame.PublicId,
+                QuestNumber = 0,
+                Players = oldGame.Players.Select(p => new Player
+                {
+                    Username = p.Username
+                }).ToList()
+            };
+
+            _gameAccessor.AddGame(newGame);
+
+            return newGame;
+        }
+
+        public void DeactivateGame(string publicGameId)
+        {
+            var game = _gameAccessor.GetGame(publicGameId);
+
+            game.Active = false;
+
+            _gameAccessor.UpdateGame(game);
         }
     }
 }

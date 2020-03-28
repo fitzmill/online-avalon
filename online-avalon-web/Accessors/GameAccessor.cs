@@ -28,6 +28,13 @@ namespace online_avalon_web.Accessors
                 .FirstOrDefault(g => g.GameId == gameId);
         }
 
+        public Game GetGame(string publicGameId)
+        {
+            return _avalonContext.Games
+                .Include(g => g.Quests)
+                .FirstOrDefault(g => g.PublicId == publicGameId);
+        }
+
         public Game GetGameWithPlayers(string publicGameId)
         {
             return _avalonContext.Games

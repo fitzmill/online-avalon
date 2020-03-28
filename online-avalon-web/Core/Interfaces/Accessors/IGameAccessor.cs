@@ -10,6 +10,7 @@ namespace online_avalon_web.Core.Interfaces.Accessors
         Game GetGameWithPlayers(string publicGameId);
         Game GetGameWithPlayers(long gameId);
         Game GetGame(long gameId);
+        Game GetGame(string publicGameId);
         void UpdateGame(Game game);
     }
 }
