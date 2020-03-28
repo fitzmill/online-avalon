@@ -12,7 +12,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using online_avalon_web.Accessors;
 using online_avalon_web.Core;
+using online_avalon_web.Core.Interfaces.Accessors;
+using online_avalon_web.Core.Interfaces.Engines;
+using online_avalon_web.Engines;
 
 namespace online_avalon_web
 {
@@ -32,6 +36,15 @@ namespace online_avalon_web
             services.AddSpaStaticFiles(options => options.RootPath = "client-app/dist");
 
             services.AddDbContext<AvalonContext>(opt => opt.UseNpgsql(Configuration.GetConnectionString("avalon")));
+
+            // Accessors
+            services.AddTransient<IPlayerAccessor, PlayerAccessor>();
+            services.AddTransient<IGameAccessor, GameAccessor>();
+            services.AddTransient<IQuestAccessor, QuestAccessor>();
+
+            // Engines
+            services.AddTransient<IPlayerEngine, PlayerEngine>();
+            services.AddTransient<IGameEngine, GameEngine>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
