@@ -224,19 +224,21 @@ namespace online_avalon_web.Engines
             return true;
         }
 
-        public bool TryMoveToLakeStage(long gameId, out string usernameWithLake)
+        public bool TryMoveToLakeStage(long gameId, out string usernameWithLake, out IEnumerable<string> usernamesToLake)
         {
-            var game = _gameAccessor.GetGame(gameId);
+            var game = _gameAccessor.GetGameWithPlayers(gameId);
 
             switch (game.QuestNumber)
             {
                 case 2:
                 case 3:
                 case 4:
+                    usernamesToLake = game.Players.Where(p => !p.HasHeldLake).Select(p => p.Username);
                     usernameWithLake = game.UsernameWithLake;
                     return true;
                 default:
                     usernameWithLake = null;
+                    usernamesToLake = null;
                     return false;
             }
         }
@@ -279,7 +281,7 @@ namespace online_avalon_web.Engines
             }
         }
 
-        public bool TryMoveToAssassinationStage(long gameId, out IEnumerable<string> usernamesToAssassinate)
+        public bool TryMoveToAssassinationStage(long gameId, out string assassin, out IEnumerable<string> usernamesToAssassinate)
         {
             var game = _gameAccessor.GetGameWithPlayers(gameId);
 
@@ -288,29 +290,34 @@ namespace online_avalon_web.Engines
                 usernamesToAssassinate = game.Players
                     .Where(p => Utilities.GetAlignmentForRole(p.Role) == AlignmentEnum.Good)
                     .Select(p => p.Username);
+                assassin = game.Players.First(p => p.Role == RoleEnum.Assassin).Username;
                 return true;
             }
             else
             {
                 usernamesToAssassinate = null;
+                assassin = null;
                 return false;
             }
         }
 
-        public bool TryMoveToApprovalStage(long gameId)
+        public bool TryMoveToApprovalStage(long gameId, out IEnumerable<string> partyUsernames)
         {
             var game = _gameAccessor.GetGameWithPlayers(gameId);
 
             var numRequiredPartyMembers = Utilities.GetRequiredQuestVotes(game.QuestNumber, game.NumPlayers);
 
-            return game.Players.Count(p => p.InParty) == numRequiredPartyMembers;
+            partyUsernames = game.Players.Where(p => p.InParty).Select(p => p.Username);
+
+            return partyUsernames.Count() == numRequiredPartyMembers;
         }
 
-        public Game EndGame(long gameId)
+        public Game EndGame(long gameId, GameResultEnum gameResult)
         {
             var game = _gameAccessor.GetGame(gameId);
 
             game.GameStatus = GameStatusEnum.Finished;
+            game.GameResult = gameResult;
 
             _gameAccessor.UpdateGame(game);
 
@@ -351,6 +358,11 @@ namespace online_avalon_web.Engines
             game.Active = false;
 
             _gameAccessor.UpdateGame(game);
+        }
+
+        public Game GetGame(string publicGameId)
+        {
+            return _gameAccessor.GetGameWithPlayers(publicGameId);
         }
     }
 }

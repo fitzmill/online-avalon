@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 using online_avalon_web.Core.Enums;
 
 namespace online_avalon_web.Core.Models
@@ -18,6 +19,7 @@ namespace online_avalon_web.Core.Models
         public bool InParty { get; set; }
         public bool HasHeldLake { get; set; }
 
+        [JsonIgnore]
         public Game Game { get; set; }
     }
 }

@@ -21,6 +21,8 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// </summary>
         /// <param name="username"></param>
         /// <param name="publicGameId"></param>
+        /// <exception cref="InvalidOperationException">If the game has already started</exception>
+        /// <exception cref="ArgumentException">If there is already someone in the game with the passed in username</exception>
         /// <returns>The game metadata</returns>
         Game AddPlayerToGame(string username, string publicGameId);
 
@@ -44,7 +46,7 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// </summary>
         /// <param name="gameId"></param>
         /// <returns>True if the correct number of players are in the party, false otherwise</returns>
-        bool TryMoveToApprovalStage(long gameId);
+        bool TryMoveToApprovalStage(long gameId, out IEnumerable<string> partyUsernames);
 
         /// <summary>
         /// Checks if all players have voted to approve/disapprove of the party.
@@ -67,8 +69,9 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// </summary>
         /// <param name="gameId"></param>
         /// <param name="usernameWithLake">Who currently has the lake</param>
+        /// <param name="usernamesToLake">Who can be laked</param>
         /// <returns>True if the current round is a lake round, false otherwise</returns>
-        bool TryMoveToLakeStage(long gameId, out string usernameWithLake);
+        bool TryMoveToLakeStage(long gameId, out string usernameWithLake, out IEnumerable<string> usernamesToLake);
 
         /// <summary>
         /// Checks if the game can move to the next quest.
@@ -84,14 +87,15 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// <param name="gameId"></param>
         /// <param name="usernamesToAssassinate">Usernames that can be assassinated</param>
         /// <returns>True if someone needs to be assassinated, false otherwise</returns>
-        bool TryMoveToAssassinationStage(long gameId, out IEnumerable<string> usernamesToAssassinate);
+        bool TryMoveToAssassinationStage(long gameId, out string assassin, out IEnumerable<string> usernamesToAssassinate);
 
         /// <summary>
         /// Sets the game status to finished
         /// </summary>
         /// <param name="gameId"></param>
+        /// <param name="gameResult">The result of the game</param>
         /// <returns>All information about the game</returns>
-        Game EndGame(long gameId);
+        Game EndGame(long gameId, GameResultEnum gameResult);
 
         /// <summary>
         /// Restarts a finished game and puts it into the pregame mode
@@ -105,5 +109,12 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// </summary>
         /// <param name="publicGameId"></param>
         void DeactivateGame(string publicGameId);
+
+        /// <summary>
+        /// Gets a game with all details
+        /// </summary>
+        /// <param name="publicGameId"></param>
+        /// <returns></returns>
+        Game GetGame(string publicGameId);
     }
 }

@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +19,7 @@ using online_avalon_web.Core;
 using online_avalon_web.Core.Interfaces.Accessors;
 using online_avalon_web.Core.Interfaces.Engines;
 using online_avalon_web.Engines;
+using online_avalon_web.Hubs;
 
 namespace online_avalon_web
 {
@@ -45,6 +48,14 @@ namespace online_avalon_web
             // Engines
             services.AddTransient<IPlayerEngine, PlayerEngine>();
             services.AddTransient<IGameEngine, GameEngine>();
+
+            // SignalR
+            services.AddSignalR()
+                .AddJsonProtocol(options =>
+                {
+                    options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
+            services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -64,6 +75,7 @@ namespace online_avalon_web
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<GameHub>("/hubs/game");
             });
 
             app.UseSpaStaticFiles();

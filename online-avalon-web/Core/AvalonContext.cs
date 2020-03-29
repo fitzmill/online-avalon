@@ -24,6 +24,8 @@ namespace online_avalon_web.Core
                 entity.HasKey(e => e.GameId);
                 entity.Property(e => e.GameId)
                     .ValueGeneratedOnAdd();
+                entity.Property(e => e.GameResult)
+                    .HasConversion(new EnumToStringConverter<GameResultEnum>());
             });
 
             modelBuilder.Entity<Player>(entity =>

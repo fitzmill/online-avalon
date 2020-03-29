@@ -36,6 +36,9 @@
     <Folder Include="Core\Enums\" />
     <Folder Include="Core\Interfaces\Engines\" />
     <Folder Include="Engines\" />
+    <Folder Include="Core\DTOs\" />
+    <Folder Include="Hubs\" />
+    <Folder Include="Core\Interfaces\Hubs\" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="$(SpaRoot)**" />

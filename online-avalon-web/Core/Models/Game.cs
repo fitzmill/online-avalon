@@ -19,6 +19,7 @@ namespace online_avalon_web.Core.Models
         public string UsernameWithLake { get; set; }
         public string KingUsername { get; set; }
         public int QuestNumber { get; set; }
+        public GameResultEnum? GameResult { get; set; }
 
         public List<Player> Players { get; set; }
         public List<Quest> Quests { get; set; }
