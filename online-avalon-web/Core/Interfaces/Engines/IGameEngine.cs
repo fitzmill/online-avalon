@@ -77,9 +77,9 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// Checks if the game can move to the next quest.
         /// </summary>
         /// <param name="gameId"></param>
-        /// <param name="newQuestNumber">The new quest number</param>
+        /// <param name="updatedGame">The updated game state</param>
         /// <returns>True if the game still has at least one quest to go, false if the game is starting to end</returns>
-        bool TryMoveToNextQuest(long gameId, out int newQuestNumber);
+        bool TryMoveToNextQuest(long gameId, out Game updatedGame);
 
         /// <summary>
         /// Checks if the game is in the assassination stage
@@ -96,6 +96,14 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// <param name="gameResult">The result of the game</param>
         /// <returns>All information about the game</returns>
         Game EndGame(long gameId, GameResultEnum gameResult);
+
+        /// <summary>
+        /// Checks to see if evil has won 3 quests. Returns true if evil has won, false otherwise
+        /// </summary>
+        /// <param name="gameId"></param>
+        /// <param name="gameSummary"></param>
+        /// <returns></returns>
+        bool TryEvilWins(long gameId, out Game gameSummary);
 
         /// <summary>
         /// Restarts a finished game and puts it into the pregame mode

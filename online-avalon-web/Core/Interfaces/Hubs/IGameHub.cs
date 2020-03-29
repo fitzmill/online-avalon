@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using online_avalon_web.Core.DTOs;
 using online_avalon_web.Core.Enums;
 using online_avalon_web.Core.Models;
 
@@ -17,9 +18,10 @@ namespace online_avalon_web.Core.Interfaces.Hubs
         Task ReceiveQuestVotes(IEnumerable<QuestVoteOptionsEnum> questVotes);
         Task MoveToLakeStage(string usernameWithLake);
         Task ReceiveUsernamesToLake(IEnumerable<string> usernamesToLake);
-        Task ReceiveNewQuestNumber(int questNumber);
+        Task ReceiveNewQuestInfo(NewQuestDTO newQuestInfo);
         Task MoveToAssassinationStage();
         Task ReceiveUsernamesToAssassinate(IEnumerable<string> usernamesToAssassinate);
         Task EndGameAndReceiveSummary(Game game);
+        Task ReceiveLakeAlignment(AlignmentEnum alignment);
     }
 }

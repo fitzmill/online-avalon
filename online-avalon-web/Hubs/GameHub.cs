@@ -142,14 +142,23 @@ namespace online_avalon_web.Hubs
 
         public async Task SendEndQuestInfo()
         {
-            if (_gameEngine.TryMoveToLakeStage(GameId, out string usernameWithLake, out IEnumerable<string> usernamesToLake))
+            if (_gameEngine.TryEvilWins(GameId, out Game gameSummary))
+            {
+                await Clients.Group(PublicGameId).EndGameAndReceiveSummary(gameSummary);
+            }
+            else if (_gameEngine.TryMoveToLakeStage(GameId, out string usernameWithLake, out IEnumerable<string> usernamesToLake))
             {
                 await Clients.Group(PublicGameId).MoveToLakeStage(usernameWithLake);
                 await Clients.User(CustomUserIdProvider.GetUserId(usernameWithLake, PublicGameId)).ReceiveUsernamesToLake(usernamesToLake);
             }
-            else if (_gameEngine.TryMoveToNextQuest(GameId, out int newQuestNumber))
+            else if (_gameEngine.TryMoveToNextQuest(GameId, out Game updatedGame))
             {
-                await Clients.Group(PublicGameId).ReceiveNewQuestNumber(newQuestNumber);
+                await Clients.Group(PublicGameId).ReceiveNewQuestInfo(new NewQuestDTO
+                {
+                    KingUsername = updatedGame.KingUsername,
+                    UsernameWithLake = updatedGame.UsernameWithLake,
+                    NewQuestNumber = updatedGame.QuestNumber
+                });
             }
             else if (_gameEngine.TryMoveToAssassinationStage(GameId, out string assassin, out IEnumerable<string> usernamesToAssassinate))
             {
@@ -170,9 +179,14 @@ namespace online_avalon_web.Hubs
             {
                 await Clients.Caller.ReceiveLakeAlignment(alignment.Value);
 
-                if (_gameEngine.TryMoveToNextQuest(GameId, out int newQuestNumber))
+                if (_gameEngine.TryMoveToNextQuest(GameId, out Game updatedGame))
                 {
-                    await Clients.Group(PublicGameId).ReceiveNewQuestNumber(newQuestNumber);
+                    await Clients.Group(PublicGameId).ReceiveNewQuestInfo(new NewQuestDTO
+                    {
+                        KingUsername = updatedGame.KingUsername,
+                        UsernameWithLake = updatedGame.UsernameWithLake,
+                        NewQuestNumber = updatedGame.QuestNumber
+                    });
                 }
                 else if (_gameEngine.TryMoveToAssassinationStage(GameId, out string assassin, out IEnumerable<string> usernamesToAssassinate))
                 {

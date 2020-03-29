@@ -243,7 +243,7 @@ namespace online_avalon_web.Engines
             }
         }
 
-        public bool TryMoveToNextQuest(long gameId, out int newQuestNumber)
+        public bool TryMoveToNextQuest(long gameId, out Game updatedGame)
         {
             var game = _gameAccessor.GetGame(gameId);
 
@@ -271,12 +271,12 @@ namespace online_avalon_web.Engines
                 game.KingUsername = game.Players[newKingIndex].Username;
 
                 _gameAccessor.UpdateGame(game);
-                newQuestNumber = game.QuestNumber;
+                updatedGame = game;
                 return true;
             }
             else
             {
-                newQuestNumber = 0;
+                updatedGame = null;
                 return false;
             }
         }
@@ -363,6 +363,23 @@ namespace online_avalon_web.Engines
         public Game GetGame(string publicGameId)
         {
             return _gameAccessor.GetGameWithPlayers(publicGameId);
+        }
+
+        public bool TryEvilWins(long gameId, out Game gameSummary)
+        {
+            var game = _gameAccessor.GetGameWithPlayers(gameId);
+
+            if (game.Quests.Count(q => q.QuestResult == QuestResultEnum.EvilWins) == 3)
+            {
+                gameSummary = game;
+                EndGame(gameId, GameResultEnum.EvilWins);
+                return true;
+            }
+            else
+            {
+                gameSummary = null;
+                return false;
+            }
         }
     }
 }
