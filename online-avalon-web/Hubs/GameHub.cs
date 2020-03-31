@@ -76,7 +76,7 @@ namespace online_avalon_web.Hubs
              var game = _gameEngine.AddPlayerToGame(username, publicGameId);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, publicGameId);
-            await Clients.Group(publicGameId).ReceiveNewPlayer($"{username} has joined the game");
+            await Clients.Group(publicGameId).ReceiveNewPlayer(username, $"{username} has joined the game");
 
             GameId = game.GameId;
             PublicGameId = game.PublicId;

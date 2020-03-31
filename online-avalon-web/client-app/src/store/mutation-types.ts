@@ -1,0 +1,17 @@
+export const ClearGameState = 'clearGameState';
+export const SetInitialGameData = 'setInitialGameData';
+export const AddPlayerToParty = 'addPlayerToParty';
+export const RemovePlayerFromParty = 'removePlayerFromParty';
+export const SetPartyUsernames = 'setPartyUsernames';
+export const SetUserApprovalVotes = 'setUserApprovalVotes';
+export const SetQuestVotes = 'setQuestVotes';
+export const SetUsernamesToLake = 'setUsernamesToLake';
+export const SetLakedUserAlignment = 'setLakedUserAlignment';
+export const SetNewQuestInfo = 'setNewQuestInfo';
+export const SetUsernamesToAssassinate = 'setUsernamestoAssassinate';
+export const SetGameSummary = 'setGameSummary';
+export const BuildConnection = 'buildConnection';
+export const AddPlayerToGame = 'addPlayerToGame';
+export const RemovePlayerFromGame = 'removePlayerFromGame';
+export const SetServerMessage = 'setServerMessage';
+export const SetQuestStage = 'setQuestStage';
