@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using online_avalon_web.Core;
 using online_avalon_web.Core.Interfaces.Accessors;
@@ -39,6 +40,12 @@ namespace online_avalon_web.Accessors
         public void UpdatePlayer(Player player)
         {
             _avalonContext.Update(player);
+            _avalonContext.SaveChanges();
+        }
+
+        public void UpdatePlayers(IEnumerable<Player> players)
+        {
+            _avalonContext.UpdateRange(players);
             _avalonContext.SaveChanges();
         }
     }

@@ -17,5 +17,10 @@ export enum QuestStage {
     ApproveParty,
     VoteQuest,
     Lake,
-    Assassinate
+    Assassinate,
+    End
+}
+
+export interface CreateGameOptions {
+    optionalRoles: string[];
 }

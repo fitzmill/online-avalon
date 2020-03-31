@@ -221,6 +221,14 @@ namespace online_avalon_web.Engines
             }
 
             userVotes = players.ToDictionary(p => p.Username, p => p.ApprovalVote.Value);
+            if (players.Count(p => p.ApprovalVote == ApprovalVoteOptionsEnum.Approve) < players.Count / 2)
+            {
+                foreach (Player p in players)
+                {
+                    p.ApprovalVote = null;
+                }
+                _playerAccessor.UpdatePlayers(players);
+            }
             return true;
         }
 

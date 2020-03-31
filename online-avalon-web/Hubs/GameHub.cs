@@ -85,9 +85,9 @@ namespace online_avalon_web.Hubs
             return game;
         }
 
-        public void LeaveGame(long gameId, string username)
+        public void LeaveGame()
         {
-            _gameEngine.RemovePlayerFromGame(gameId, username);
+            _gameEngine.RemovePlayerFromGame(GameId, Username);
         }
 
         public async Task StartGame(GameOptionsDTO gameOptions)

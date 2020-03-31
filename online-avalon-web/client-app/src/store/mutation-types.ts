@@ -15,3 +15,5 @@ export const AddPlayerToGame = 'addPlayerToGame';
 export const RemovePlayerFromGame = 'removePlayerFromGame';
 export const SetServerMessage = 'setServerMessage';
 export const SetQuestStage = 'setQuestStage';
+export const SetServerErrorMessage = 'setServerErrorMessage';
+export const SetPlayerAsHost = 'setPlayerAsHost';

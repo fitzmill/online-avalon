@@ -1,7 +1,25 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { InitialGameDto, NewQuestInfoDto } from '@/types';
+import { InitialGameDto, NewQuestInfoDto, CreateGameOptions } from '@/types';
 import signalr from '@microsoft/signalr';
+import axios from 'axios';
+import registerSignalREventHandlers from './signalr-utilities';
+import apiConfigs from './api-utilities';
+import {
+  StartConnection,
+  StartGame,
+  JoinGame,
+  CreateGame,
+  LeaveGame,
+  AddUserToParty,
+  RemoveUserFromParty,
+  SubmitParty,
+  VoteForParty,
+  VoteForQuest,
+  SendEndQuestInfo,
+  LakePlayer,
+  AssassinatePlayer,
+} from './action-types';
 import {
   ClearGameState,
   SetInitialGameData,
@@ -19,13 +37,15 @@ import {
   AddPlayerToGame,
   RemovePlayerFromGame,
   SetServerMessage,
+  SetServerErrorMessage,
+  SetPlayerAsHost,
 } from './mutation-types';
-import { StartConnection, StartGame } from './action-types';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    isHost: false,
     questNumber: 0,
     gameId: 0,
     username: '',
@@ -34,6 +54,7 @@ export default new Vuex.Store({
     kingUsername: '',
     playerRole: '',
     serverMessage: '',
+    serverErrorMessage: '',
     lakedUserAlignment: '',
     partyUsernames: [] as string[],
     questVotes: [] as string[],
@@ -49,22 +70,24 @@ export default new Vuex.Store({
   },
   mutations: {
     [ClearGameState]: (state) => {
+      state.isHost = false;
+      state.gameId = 0;
+      state.questNumber = 0;
       state.username = '';
       state.publicGameId = '';
       state.usernameWithLake = '';
       state.kingUsername = '';
-      state.gameId = 0;
-      state.knownUsernames = [];
       state.playerRole = '';
       state.serverMessage = '';
+      state.lakedUserAlignment = '';
+      state.knownUsernames = [];
       state.partyUsernames = [];
-      state.userApprovalVotes = {};
       state.questVotes = [];
       state.usernamesToLake = [];
       state.usernamesToAssassinate = [];
-      state.gameSummary = {};
-      state.lakedUserAlignment = '';
       state.players = [];
+      state.userApprovalVotes = {};
+      state.gameSummary = {};
     },
     [SetInitialGameData]: (state, initialGameData: InitialGameDto) => {
       Object.assign(state, initialGameData);
@@ -108,6 +131,12 @@ export default new Vuex.Store({
     [SetServerMessage]: (state, message) => {
       state.serverMessage = message;
     },
+    [SetServerErrorMessage]: (state, message) => {
+      state.serverErrorMessage = message;
+    },
+    [SetPlayerAsHost]: (state) => {
+      state.isHost = true;
+    },
     [BuildConnection]: (state) => {
       state.connection = new signalr.HubConnectionBuilder()
         .withUrl(`/hubs/game?username=${state.username}&publicGameId=${state.publicGameId}`)
@@ -115,12 +144,59 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    [StartConnection]: async ({ commit, state }) => {
+    [StartConnection]: async ({ state, commit }) => {
       commit(BuildConnection);
+      registerSignalREventHandlers(state.connection, commit);
       await state.connection.start();
     },
-    [StartGame]: async ({ state }) => {
-      state.connection.invoke('StartGame');
+    [CreateGame]: async ({ state, commit, dispatch }) => {
+      const data = {
+        hostUsername: state.username,
+        publicGameId: state.publicGameId,
+      };
+      try {
+        await axios(Object.assign(apiConfigs.createGame, { data }));
+        await dispatch(StartConnection);
+        await state.connection.invoke('JoinGameAsHost', state.publicGameId);
+      } catch (error) {
+        if (error.response) {
+          commit(SetServerErrorMessage, error.response.data);
+        }
+      }
+    },
+    [StartGame]: async ({ state }, createGameOptions: CreateGameOptions) => {
+      await state.connection.invoke('StartGame', createGameOptions);
+    },
+    [JoinGame]: async ({ state, dispatch }) => {
+      await dispatch(StartConnection);
+      await state.connection.invoke('JoinGame', state.publicGameId, state.username);
+    },
+    [LeaveGame]: async ({ state }) => {
+      await state.connection.invoke('LeaveGame');
+    },
+    [AddUserToParty]: async ({ state }, username: string) => {
+      await state.connection.invoke('AddUserToParty', username);
+    },
+    [RemoveUserFromParty]: async ({ state }, username: string) => {
+      await state.connection.invoke('RemoveUserFromParty', username);
+    },
+    [SubmitParty]: async ({ state }) => {
+      await state.connection.invoke('SubmitParty');
+    },
+    [VoteForParty]: async ({ state }, vote: string) => {
+      await state.connection.invoke('VoteForParty', vote);
+    },
+    [VoteForQuest]: async ({ state }, vote: string) => {
+      await state.connection.invoke('VoteForQuest', vote);
+    },
+    [SendEndQuestInfo]: async ({ state }) => {
+      await state.connection.invoke('SendEndQuestInfo');
+    },
+    [LakePlayer]: async ({ state }, username: string) => {
+      await state.connection.invoke('LakePlayer', username);
+    },
+    [AssassinatePlayer]: async ({ state }, username: string) => {
+      await state.connection.invoke('AssassinatePlayer', username);
     },
   },
   modules: {},

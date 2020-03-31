@@ -1,5 +1,5 @@
 import { Commit } from 'vuex';
-import { InitialGameDto, QuestStage } from '@/types';
+import { InitialGameDto, QuestStage, NewQuestInfoDto } from '@/types';
 import {
   AddPlayerToGame,
   SetServerMessage,
@@ -10,6 +10,11 @@ import {
   SetUserApprovalVotes,
   SetQuestVotes,
   SetQuestStage,
+  SetUsernamesToLake,
+  SetNewQuestInfo,
+  SetUsernamesToAssassinate,
+  SetGameSummary,
+  SetLakedUserAlignment,
 } from './mutation-types';
 
 const registerSignalREventHandlers = (connection: signalR.HubConnection, commit: Commit) => {
@@ -39,6 +44,26 @@ const registerSignalREventHandlers = (connection: signalR.HubConnection, commit:
   });
   connection.on('MoveToLakeStage', () => {
     commit(SetQuestStage, QuestStage.Lake);
+  });
+  connection.on('ReceiveUsernamesToLake', (usernamesToLake: string[]) => {
+    commit(SetUsernamesToLake, usernamesToLake);
+  });
+  connection.on('ReceiveNewQuestInfo', (newQuestInfo: NewQuestInfoDto) => {
+    commit(SetNewQuestInfo, newQuestInfo);
+    commit(SetQuestStage, QuestStage.ChooseParty);
+  });
+  connection.on('MoveToAssassinationStage', () => {
+    commit(SetQuestStage, QuestStage.Assassinate);
+  });
+  connection.on('ReceiveUsernamesToAssassinate', (usernamesToAssassinate: string[]) => {
+    commit(SetUsernamesToAssassinate, usernamesToAssassinate);
+  });
+  connection.on('EndGameAndReceiveSummary', (summary) => {
+    commit(SetGameSummary, summary);
+    commit(SetQuestStage, QuestStage.End);
+  });
+  connection.on('ReceiveLakeAlignment', (lakedUserAlignment: string) => {
+    commit(SetLakedUserAlignment, lakedUserAlignment);
   });
 };
 
