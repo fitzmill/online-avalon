@@ -17,3 +17,5 @@ export const SetServerMessage = 'setServerMessage';
 export const SetQuestStage = 'setQuestStage';
 export const SetServerErrorMessage = 'setServerErrorMessage';
 export const SetPlayerAsHost = 'setPlayerAsHost';
+export const SetPublicGameId = 'setPublicGameId';
+export const SetUsername = 'setUsername';

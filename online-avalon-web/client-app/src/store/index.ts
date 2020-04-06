@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import { InitialGameDto, NewQuestInfoDto, CreateGameOptions } from '@/types';
-import signalr from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr';
 import axios from 'axios';
 import registerSignalREventHandlers from './signalr-utilities';
 import apiConfigs from './api-utilities';
@@ -39,6 +39,8 @@ import {
   SetServerMessage,
   SetServerErrorMessage,
   SetPlayerAsHost,
+  SetUsername,
+  SetPublicGameId,
 } from './mutation-types';
 
 Vue.use(Vuex);
@@ -64,9 +66,9 @@ export default new Vuex.Store({
     players: [] as string[],
     userApprovalVotes: {} as { [key: string]: string },
     gameSummary: {},
-    connection: new signalr.HubConnectionBuilder()
+    connection: new HubConnectionBuilder()
       .withUrl('/hubs/game')
-      .build() as signalr.HubConnection,
+      .build() as HubConnection,
   },
   mutations: {
     [ClearGameState]: (state) => {
@@ -137,8 +139,14 @@ export default new Vuex.Store({
     [SetPlayerAsHost]: (state) => {
       state.isHost = true;
     },
+    [SetUsername]: (state, username) => {
+      state.username = username;
+    },
+    [SetPublicGameId]: (state, publicGameId) => {
+      state.publicGameId = publicGameId;
+    },
     [BuildConnection]: (state) => {
-      state.connection = new signalr.HubConnectionBuilder()
+      state.connection = new HubConnectionBuilder()
         .withUrl(`/hubs/game?username=${state.username}&publicGameId=${state.publicGameId}`)
         .build();
     },
