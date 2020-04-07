@@ -4,7 +4,7 @@
     <p>Waiting for the host to start the game</p>
     <button
       class="uk-button uk-button-primary uk-button-small uk-margin-small-bottom"
-      :uk-tooltip="isHost ? 'Set options for the game' : 'Only the host can set options'"
+      :uk-tooltip="isHost ? '' : 'Only the host can set options'"
       :disabled="!isHost"
       @click="showOptions = !showOptions"
     >Game Options</button>
