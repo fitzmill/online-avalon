@@ -1,9 +1,16 @@
-export interface InitialGameDto {
+export interface StartGameDto {
     playerRole: string;
     gameId: number;
     knownUsernames: string[];
     usernameWithLake: string;
     king: string;
+}
+
+export interface InitialGameDto {
+    hostUsername: string;
+    players: [{
+        username: string;
+    }];
 }
 
 export interface NewQuestInfoDto {

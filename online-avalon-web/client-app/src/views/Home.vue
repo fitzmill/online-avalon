@@ -3,7 +3,7 @@
     <div
       id="join-card"
       class="uk-card uk-card-default uk-card-body
-        uk-width-large@m uk-align-center uk-position-center uk-margin-remove"
+        uk-width-large@m uk-position-center uk-margin-remove"
     >
       <div class="uk-flex uk-flex-column">
         <h2>Welcome!</h2>
@@ -35,7 +35,7 @@
         id="create-card"
         v-if="creatingGame"
         class="uk-card uk-card-default uk-card-body
-        uk-width-large@m uk-align-center uk-position-center uk-margin-remove">
+        uk-width-large@m uk-position-center uk-margin-remove">
         <button class="uk-button uk-button-default" @click="createGame()">
           <span class="uk-margin-small-right" uk-icon="chevron-left"></span>
           Back

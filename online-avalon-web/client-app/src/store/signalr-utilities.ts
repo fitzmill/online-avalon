@@ -1,5 +1,5 @@
 import { Commit } from 'vuex';
-import { InitialGameDto, QuestStage, NewQuestInfoDto } from '@/types';
+import { StartGameDto, QuestStage, NewQuestInfoDto } from '@/types';
 import {
   AddPlayerToGame,
   SetServerMessage,
@@ -22,7 +22,7 @@ const registerSignalREventHandlers = (connection: signalR.HubConnection, commit:
     commit(AddPlayerToGame, username);
     commit(SetServerMessage, message);
   });
-  connection.on('StartGame', (initialGameData: InitialGameDto) => {
+  connection.on('StartGame', (initialGameData: StartGameDto) => {
     commit(SetInitialGameData, initialGameData);
     commit(SetQuestStage, QuestStage.ChooseParty);
   });

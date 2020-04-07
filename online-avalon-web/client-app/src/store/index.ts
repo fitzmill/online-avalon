@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { InitialGameDto, NewQuestInfoDto, CreateGameOptions } from '@/types';
+import {
+  StartGameDto, NewQuestInfoDto, CreateGameOptions, InitialGameDto,
+} from '@/types';
 import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr';
 import axios from 'axios';
 import registerSignalREventHandlers from './signalr-utilities';
@@ -41,6 +43,8 @@ import {
   SetPlayerAsHost,
   SetUsername,
   SetPublicGameId,
+  SetHostUsername,
+  SetPlayers,
 } from './mutation-types';
 
 Vue.use(Vuex);
@@ -51,6 +55,7 @@ export default new Vuex.Store({
     questNumber: 0,
     gameId: 0,
     username: '',
+    hostUsername: '',
     publicGameId: '',
     usernameWithLake: '',
     kingUsername: '',
@@ -63,7 +68,7 @@ export default new Vuex.Store({
     usernamesToLake: [] as string[],
     usernamesToAssassinate: [] as string[],
     knownUsernames: [] as string[],
-    players: [] as string[],
+    players: ['fitzmill', 'fitzy'] as string[],
     userApprovalVotes: {} as { [key: string]: string },
     gameSummary: {},
     connection: new HubConnectionBuilder()
@@ -76,6 +81,7 @@ export default new Vuex.Store({
       state.gameId = 0;
       state.questNumber = 0;
       state.username = '';
+      state.hostUsername = '';
       state.publicGameId = '';
       state.usernameWithLake = '';
       state.kingUsername = '';
@@ -91,7 +97,7 @@ export default new Vuex.Store({
       state.userApprovalVotes = {};
       state.gameSummary = {};
     },
-    [SetInitialGameData]: (state, initialGameData: InitialGameDto) => {
+    [SetInitialGameData]: (state, initialGameData: StartGameDto) => {
       Object.assign(state, initialGameData);
     },
     [AddPlayerToParty]: (state, username) => {
@@ -145,6 +151,12 @@ export default new Vuex.Store({
     [SetPublicGameId]: (state, publicGameId) => {
       state.publicGameId = publicGameId;
     },
+    [SetHostUsername]: (state, username) => {
+      state.hostUsername = username;
+    },
+    [SetPlayers]: (state, players) => {
+      state.players = players;
+    },
     [BuildConnection]: (state) => {
       state.connection = new HubConnectionBuilder()
         .withUrl(`/hubs/game?username=${state.username}&publicGameId=${state.publicGameId}`)
@@ -175,9 +187,11 @@ export default new Vuex.Store({
     [StartGame]: async ({ state }, createGameOptions: CreateGameOptions) => {
       await state.connection.invoke('StartGame', createGameOptions);
     },
-    [JoinGame]: async ({ state, dispatch }) => {
+    [JoinGame]: async ({ state, dispatch, commit }) => {
       await dispatch(StartConnection);
-      await state.connection.invoke('JoinGame', state.publicGameId, state.username);
+      const data = await state.connection.invoke('JoinGame', state.publicGameId, state.username) as InitialGameDto;
+      commit(SetPlayerAsHost, data.hostUsername);
+      commit(SetPlayers, data.players.map((p) => p.username));
     },
     [LeaveGame]: async ({ state }) => {
       await state.connection.invoke('LeaveGame');
