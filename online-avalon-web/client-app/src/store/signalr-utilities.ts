@@ -15,6 +15,7 @@ import {
   SetUsernamesToAssassinate,
   SetGameSummary,
   SetLakedUserAlignment,
+  SetCurrentQuestResult,
 } from './mutation-types';
 
 const registerSignalREventHandlers = (connection: signalR.HubConnection, commit: Commit) => {
@@ -41,6 +42,7 @@ const registerSignalREventHandlers = (connection: signalR.HubConnection, commit:
   });
   connection.on('ReceiveQuestVotes', (questVotes: string[]) => {
     commit(SetQuestVotes, questVotes);
+    commit(SetCurrentQuestResult);
   });
   connection.on('MoveToLakeStage', () => {
     commit(SetQuestStage, QuestStage.Lake);

@@ -13,8 +13,8 @@
       v-for="player in players"
       :key="player"
     >
-      {{player}}
-      <label class="uk-text-bold">{{player == hostUsername ? '(Host)' : ''}}</label>
+      {{player.username}}
+      <label class="uk-text-bold">{{player.isHost ? '(Host)' : ''}}</label>
     </div>
     <button
       class="uk-button uk-button-success uk-margin-top"
@@ -61,16 +61,14 @@
 import { Vue, Component } from 'vue-property-decorator';
 import { State, Action } from 'vuex-class';
 import UIkit from 'uikit';
-import { CreateGameOptions } from '../types';
+import { CreateGameOptions, Player } from '../types';
 import { StartGame } from '../store/action-types';
 
 @Component
 export default class WaitingRoom extends Vue {
-  @State private players!: string[];
+  @State private players!: Player[];
 
   @State private isHost!: boolean;
-
-  @State private hostUsername!: string;
 
   @Action(StartGame) private dispatchStartGame!: (arg0: CreateGameOptions) => Promise<void>
 

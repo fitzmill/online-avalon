@@ -21,3 +21,4 @@ export const SetPublicGameId = 'setPublicGameId';
 export const SetUsername = 'setUsername';
 export const SetHostUsername = 'setHostUsername';
 export const SetPlayers = 'setPlayers';
+export const SetCurrentQuestResult = 'setCurrentQuestResult';
