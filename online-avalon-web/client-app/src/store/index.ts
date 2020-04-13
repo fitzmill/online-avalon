@@ -1,10 +1,18 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import {
-  StartGameDto, NewQuestInfoDto, CreateGameOptions, InitialGameDto, QuestStage, Player, QuestResult,
+  StartGameDto,
+  NewQuestInfoDto,
+  CreateGameOptions,
+  InitialGameDto,
+  QuestStage,
+  Player,
+  QuestResult,
+  Role,
 } from '@/types';
-import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnection, HubConnectionState } from '@microsoft/signalr';
 import axios from 'axios';
+import { getPlayerDisplayText, getAlignmentForPlayer } from '@/Utility';
 import registerSignalREventHandlers from './signalr-utilities';
 import apiConfigs from './api-utilities';
 import {
@@ -57,6 +65,10 @@ import {
   IsAssassinateStage,
   IsEndStage,
   IsLeader,
+  PartyLeader,
+  IsInGame,
+  PlayerDisplayText,
+  PlayerAlignment,
 } from './getter-types';
 
 Vue.use(Vuex);
@@ -66,8 +78,8 @@ export default new Vuex.Store({
     isHost: false,
     questNumber: 0,
     username: 'fitzweeb',
-    publicGameId: '',
-    playerRole: '',
+    publicGameId: 'test',
+    playerRole: Role.LoyalServantOfArthur,
     serverMessage: '',
     serverErrorMessage: '',
     lakedUserAlignment: '',
@@ -75,7 +87,7 @@ export default new Vuex.Store({
     questVotes: [] as string[],
     usernamesToLake: [] as string[],
     usernamesToAssassinate: [] as string[],
-    knownUsernames: [] as string[],
+    knownUsernames: ['test1', 'test2'] as string[],
     questResults: [
       QuestResult.Unknown,
       QuestResult.Unknown,
@@ -87,6 +99,13 @@ export default new Vuex.Store({
       { username: 'fitzmill', isHost: true, isInParty: false },
       { username: 'fitzyaskfjlajsklfjlka;djflak;sd;fladsjflkasjf', isInParty: true },
       { username: 'fitzweeb', isKing: true, isInParty: false },
+      { username: 'test1' },
+      { username: 'test2' },
+      { username: 'test3' },
+      { username: 'test4' },
+      { username: 'test5' },
+      { username: 'test6' },
+      { username: 'test7' },
     ] as Player[],
     userApprovalVotes: {} as { [key: string]: string },
     gameSummary: {},
@@ -103,6 +122,10 @@ export default new Vuex.Store({
     [IsAssassinateStage]: (state) => state.questStage === QuestStage.Assassinate,
     [IsEndStage]: (state) => state.questStage === QuestStage.End,
     [IsLeader]: (state) => state.players.find((p) => p.isKing)?.username === state.username,
+    [PartyLeader]: (state) => state.players.find((p) => p.isKing),
+    [IsInGame]: (state) => state.connection.state === HubConnectionState.Connected,
+    [PlayerDisplayText]: (state) => getPlayerDisplayText(state.playerRole, state.knownUsernames),
+    [PlayerAlignment]: (state) => getAlignmentForPlayer(state.playerRole),
   },
   mutations: {
     [ClearGameState]: (state) => {
@@ -110,7 +133,7 @@ export default new Vuex.Store({
       state.questNumber = 0;
       state.username = '';
       state.publicGameId = '';
-      state.playerRole = '';
+      state.playerRole = Role.Default;
       state.serverMessage = '';
       state.lakedUserAlignment = '';
       state.knownUsernames = [];

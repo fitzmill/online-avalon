@@ -6,3 +6,7 @@ export const IsLakeStage = 'isLakeStage';
 export const IsAssassinateStage = 'isAssassinateStage';
 export const IsEndStage = 'isEndStage';
 export const IsLeader = 'isLeader';
+export const PartyLeader = 'partyLeader';
+export const IsInGame = 'isInGame';
+export const PlayerDisplayText = 'playerDisplayText';
+export const PlayerAlignment = 'playerAlignment';

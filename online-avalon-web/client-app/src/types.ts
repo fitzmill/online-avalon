@@ -1,5 +1,5 @@
 export interface StartGameDto {
-    playerRole: string;
+    playerRole: Role;
     knownUsernames: string[];
     usernameWithLake: string;
     king: string;
@@ -42,4 +42,21 @@ export enum QuestResult {
     Unknown = '?',
     GoodWins = '✔',
     EvilWins = 'X'
+}
+
+export enum Alignment {
+    Good = 1,
+    Evil
+}
+
+export enum Role {
+    Mordred = 'Mordred',
+    Morgana = 'Morgana',
+    Oberon = 'Oberon',
+    MinionOfMordred = 'MinionOfMordred',
+    Assassin = 'Assassin',
+    Merlin = 'Merlin',
+    Percival = 'Percival',
+    LoyalServantOfArthur = 'LoyalServantOfArthur',
+    Default = '',
 }

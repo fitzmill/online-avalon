@@ -1,27 +1,42 @@
 <template>
   <div>
-    <WaitingRoom v-if="isDefaultStage" />
-    <div v-else class="uk-position-center">
-      <h3>Quest History</h3>
-      <div class="uk-grid-divider uk-grid-medium uk-child-width-auto uk-flex-center" uk-grid>
-        <div v-for="(result, i) in questResults" :key="i"
-          :class="[i === questNumber ? 'uk-text-bold' : '']">
-          {{i+1}}
-          <div :class="[getClassForQuestResult(i)]">{{result}}</div>
+    <label id="publicGameId">Lobby: {{publicGameId}}</label>
+    <div class="uk-flex uk-flex-center uk-margin-top">
+      <WaitingRoom v-if="isDefaultStage" />
+      <div v-else>
+        <h3>Quest History</h3>
+        <div class="uk-grid-divider uk-grid-medium uk-child-width-auto uk-flex-center" uk-grid>
+          <div v-for="(result, i) in questResults" :key="i"
+            :class="[i === questNumber ? 'uk-text-bold' : '']">
+            {{i+1}}
+            <div :class="[getClassForQuestResult(i)]">{{result}}</div>
+          </div>
         </div>
-      </div>
-      <div class="uk-card uk-card-default uk-width-xlarge@m">
-        <div class="uk-card-header">
-          <button class="uk-button uk-button-primary uk-button-small"
-          >
-            Player Info
-          </button>
-        </div>
-        <div class="uk-card-body">
-          <ChooseParty v-if="isChoosePartyStage" />
+        <div class="uk-card uk-card-default uk-width-xlarge@s uk-margin-small-top">
+          <div class="uk-card-header">
+            <button class="uk-button uk-button-primary uk-button-small"
+              uk-toggle="target: #player-info-modal">
+              Player Info
+            </button>
+            <div v-if="partyLeader" class="uk-margin-small-top">
+              {{partyLeader.username}} is the King
+            </div>
+          </div>
+          <div class="uk-card-body">
+            <ChooseParty v-if="isChoosePartyStage" />
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Player Info Modal -->
+    <div id="player-info-modal" class="uk-flex-top" uk-modal>
+    <div class="uk-modal-dialog uk-modal-body uk-margin-auto-vertical">
+      <button class="uk-modal-close-default" type="button" uk-close></button>
+
+      <PlayerInfo />
+    </div>
+</div>
   </div>
 </template>
 
@@ -30,6 +45,7 @@ import { Vue, Component } from 'vue-property-decorator';
 import { Getter, State } from 'vuex-class';
 import WaitingRoom from '@/components/WaitingRoom.vue';
 import ChooseParty from '@/components/ChooseParty.vue';
+import PlayerInfo from '@/components/PlayerInfo.vue';
 import {
   IsDefaultStage,
   IsChoosePartyStage,
@@ -38,13 +54,15 @@ import {
   IsLakeStage,
   IsAssassinateStage,
   IsEndStage,
+  PartyLeader,
 } from '../store/getter-types';
-import { QuestResult } from '../types';
+import { QuestResult, Player } from '../types';
 
 @Component({
   components: {
     WaitingRoom,
     ChooseParty,
+    PlayerInfo,
   },
 })
 export default class Play extends Vue {
@@ -62,9 +80,13 @@ export default class Play extends Vue {
 
   @Getter(IsEndStage) private isEndStage!: boolean;
 
+  @Getter(PartyLeader) private partyLeader!: Player;
+
   @State private questResults!: QuestResult[];
 
   @State private questNumber!: number;
+
+  @State private publicGameId!: string;
 
   private getClassForQuestResult(index: number) {
     if (this.questResults[index] === QuestResult.Unknown) {
@@ -77,3 +99,11 @@ export default class Play extends Vue {
   }
 }
 </script>
+
+<style scoped>
+#publicGameId {
+  position: absolute;
+  top: 80px;
+  left: 5px;
+}
+</style>
