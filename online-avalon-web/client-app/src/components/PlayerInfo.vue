@@ -3,12 +3,13 @@
     <h5 :class="textClassColor">{{playerDisplayText}}</h5>
     <div>
       <h5>All Players</h5>
-      <div v-for="player in players" :key="player.username" class="uk-text-truncate">
-        <label class="uk-text-bold player-list-text">
+      <div v-for="player in players" :key="player.username"
+        class="uk-text-truncate uk-text-emphasis">
+        <label class="uk-text-bold">
           {{player.isKing ? '(King)' : ''}}
           {{player.hasLake ? '(Lake)' : ''}}
         </label>
-        <label class="player-list-text">{{player.username}}</label>
+        <label>{{player.username}}</label>
       </div>
     </div>
   </div>
@@ -36,9 +37,3 @@ export default class PlayerInfo extends Vue {
   }
 }
 </script>
-
-<style>
-.player-list-text {
-  color: #333;
-}
-</style>
