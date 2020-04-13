@@ -35,6 +35,11 @@
       <button class="uk-modal-close-default" type="button" uk-close></button>
 
       <PlayerInfo />
+
+      <button class="uk-button uk-button-primary uk-button-small uk-align-center"
+        uk-toggle="target: #player-info-modal">
+        Close
+      </button>
     </div>
 </div>
   </div>
