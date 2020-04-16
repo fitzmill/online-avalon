@@ -23,11 +23,9 @@
             </div>
           </div>
           <div class="uk-card-body">
-            <ChooseParty v-if="isChoosePartyStage" />
-            <div v-else-if="isApprovePartyStage">
-              <ApproveParty v-if="!haveUserApprovalVotes" />
-              <ApprovePartyResults v-else />
-            </div>
+            <transition name="play-component-fade" mode="out-in">
+              <component v-bind:is="currentComponent"></component>
+            </transition>
           </div>
         </div>
       </div>
@@ -107,6 +105,19 @@ export default class Play extends Vue {
     return Object.keys(this.userApprovalVotes).length !== 0;
   }
 
+  get currentComponent() {
+    if (this.isChoosePartyStage) {
+      return ChooseParty;
+    }
+    if (this.isApprovePartyStage) {
+      if (!this.haveUserApprovalVotes) {
+        return ApproveParty;
+      }
+      return ApprovePartyResults;
+    }
+    return { template: '<div></div>' };
+  }
+
   private getClassForQuestResult(index: number) {
     if (this.questResults[index] === QuestResult.Unknown) {
       return '';
@@ -124,5 +135,15 @@ export default class Play extends Vue {
   position: absolute;
   top: 80px;
   left: 5px;
+}
+
+.play-component-fade-enter-active,
+.play-component-fade-leave-active {
+  transition: opacity .3s ease;
+}
+
+.play-component-fade-enter,
+.play-component-fade-leave-to {
+  opacity: 0;
 }
 </style>
