@@ -210,24 +210,30 @@ namespace online_avalon_web.Engines
             return true;
         }
 
-        public bool TryToApproveParty(long gameId, out Dictionary<string, ApprovalVoteOptionsEnum> userVotes)
+        public bool TryToApproveParty(long gameId, out Dictionary<string, ApprovalVoteOptionsEnum> userVotes, out string newKingUsername)
         {
-            var players = _playerAccessor.GetPlayersInGame(gameId).ToList();
+            var game = _gameAccessor.GetGameWithPlayers(gameId);
+            var players = game.Players;
 
             if (players.Count(p => p.ApprovalVote.HasValue) < players.Count)
             {
                 userVotes = null;
+                newKingUsername = null;
                 return false;
             }
 
             userVotes = players.ToDictionary(p => p.Username, p => p.ApprovalVote.Value);
+            newKingUsername = null;
             if (players.Count(p => p.ApprovalVote == ApprovalVoteOptionsEnum.Approve) < players.Count / 2)
             {
+                var newKingIndex = (players.FindIndex(p => p.Username == game.KingUsername) + 1) % game.NumPlayers;
+                newKingUsername = players[newKingIndex].Username;
+                game.KingUsername = newKingUsername;
                 foreach (Player p in players)
                 {
                     p.ApprovalVote = null;
                 }
-                _playerAccessor.UpdatePlayers(players);
+                _gameAccessor.UpdateGame(game);
             }
             return true;
         }

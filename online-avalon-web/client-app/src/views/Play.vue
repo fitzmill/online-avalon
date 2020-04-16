@@ -24,6 +24,10 @@
           </div>
           <div class="uk-card-body">
             <ChooseParty v-if="isChoosePartyStage" />
+            <div v-else-if="isApprovePartyStage">
+              <ApproveParty v-if="!haveUserApprovalVotes" />
+              <ApprovePartyResults v-else />
+            </div>
           </div>
         </div>
       </div>
@@ -51,6 +55,8 @@ import { Getter, State } from 'vuex-class';
 import WaitingRoom from '@/components/WaitingRoom.vue';
 import ChooseParty from '@/components/ChooseParty.vue';
 import PlayerInfo from '@/components/PlayerInfo.vue';
+import ApproveParty from '@/components/ApproveParty.vue';
+import ApprovePartyResults from '@/components/ApprovePartyResults.vue';
 import {
   IsDefaultStage,
   IsChoosePartyStage,
@@ -68,6 +74,8 @@ import { QuestResult, Player } from '../types';
     WaitingRoom,
     ChooseParty,
     PlayerInfo,
+    ApproveParty,
+    ApprovePartyResults,
   },
 })
 export default class Play extends Vue {
@@ -92,6 +100,12 @@ export default class Play extends Vue {
   @State private questNumber!: number;
 
   @State private publicGameId!: string;
+
+  @State private userApprovalVotes!: string;
+
+  get haveUserApprovalVotes(): boolean {
+    return Object.keys(this.userApprovalVotes).length !== 0;
+  }
 
   private getClassForQuestResult(index: number) {
     if (this.questResults[index] === QuestResult.Unknown) {

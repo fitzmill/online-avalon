@@ -54,7 +54,7 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// <param name="gameId"></param>
         /// <param name="userVotes">Map of usernames to vote</param>
         /// <returns>True if all players have voted, false otherwise</returns>
-        bool TryToApproveParty(long gameId, out Dictionary<string, ApprovalVoteOptionsEnum> userVotes);
+        bool TryToApproveParty(long gameId, out Dictionary<string, ApprovalVoteOptionsEnum> userVotes, out string newKingUsername);
 
         /// <summary>
         /// Checks if all players have voted to succeed/fail the quest

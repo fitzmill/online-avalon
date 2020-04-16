@@ -16,6 +16,7 @@ import {
   SetGameSummary,
   SetLakedUserAlignment,
   SetCurrentQuestResult,
+  SetKingUsername,
 } from './mutation-types';
 
 const registerSignalREventHandlers = (connection: signalR.HubConnection, commit: Commit) => {
@@ -37,8 +38,11 @@ const registerSignalREventHandlers = (connection: signalR.HubConnection, commit:
     commit(SetPartyUsernames, partyUsernames);
     commit(SetQuestStage, QuestStage.ApproveParty);
   });
-  connection.on('ReceiveUserApprovalVotes', (userApprovalVotes: { [key: string]: string }) => {
+  connection.on('ReceiveUserApprovalVotes', (userApprovalVotes: { [key: string]: string }, newKingUsername: string) => {
     commit(SetUserApprovalVotes, userApprovalVotes);
+    if (newKingUsername) {
+      commit(SetKingUsername, newKingUsername);
+    }
   });
   connection.on('ReceiveQuestVotes', (questVotes: string[]) => {
     commit(SetQuestVotes, questVotes);

@@ -60,3 +60,8 @@ export enum Role {
     LoyalServantOfArthur = 'LoyalServantOfArthur',
     Default = '',
 }
+
+export enum ApprovalVoteOptions {
+    Approve = 'Approve',
+    Reject = 'Reject'
+}

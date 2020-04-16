@@ -55,6 +55,7 @@ import {
   SetPlayers,
   SetQuestStage,
   SetCurrentQuestResult,
+  SetKingUsername,
 } from './mutation-types';
 import {
   IsDefaultStage,
@@ -69,6 +70,7 @@ import {
   IsInGame,
   PlayerDisplayText,
   PlayerAlignment,
+  PartyMembers,
 } from './getter-types';
 
 Vue.use(Vuex);
@@ -83,7 +85,7 @@ export default new Vuex.Store({
     serverMessage: '',
     serverErrorMessage: '',
     lakedUserAlignment: '',
-    questStage: QuestStage.ChooseParty,
+    questStage: QuestStage.ApproveParty,
     questVotes: [] as string[],
     usernamesToLake: [] as string[],
     usernamesToAssassinate: [] as string[],
@@ -99,15 +101,19 @@ export default new Vuex.Store({
       { username: 'fitzmill', isHost: true, isInParty: false },
       { username: 'fitzyaskfjlajsklfjlka;djflak;sd;fladsjflkasjf', isInParty: true },
       { username: 'fitzweeb', isKing: true, isInParty: false },
-      { username: 'test1' },
-      { username: 'test2' },
+      { username: 'test1', isInParty: true },
+      { username: 'test2', isInParty: true },
       { username: 'test3' },
-      { username: 'test4' },
-      { username: 'test5' },
+      { username: 'test4', isInParty: true },
+      { username: 'test5', isInParty: true },
       { username: 'test6' },
       { username: 'test7' },
     ] as Player[],
-    userApprovalVotes: {} as { [key: string]: string },
+    userApprovalVotes: {
+      fitzweeb: 'Approve',
+      fitzmill: 'Reject',
+      test1: 'Reject',
+    } as { [key: string]: string },
     gameSummary: {},
     connection: new HubConnectionBuilder()
       .withUrl('/hubs/game')
@@ -126,6 +132,7 @@ export default new Vuex.Store({
     [IsInGame]: (state) => state.connection.state === HubConnectionState.Connected,
     [PlayerDisplayText]: (state) => getPlayerDisplayText(state.playerRole, state.knownUsernames),
     [PlayerAlignment]: (state) => getAlignmentForPlayer(state.playerRole),
+    [PartyMembers]: (state) => state.players.filter((p) => p.isInParty),
   },
   mutations: {
     [ClearGameState]: (state) => {
@@ -259,6 +266,16 @@ export default new Vuex.Store({
         result = QuestResult.GoodWins;
       }
       state.questResults[state.questNumber] = result;
+    },
+    [SetKingUsername]: (state, username: string) => {
+      const oldKing = state.players.find((p) => p.isKing);
+      if (oldKing) {
+        oldKing.isKing = false;
+      }
+      const newKing = state.players.find((p) => p.username === username);
+      if (newKing) {
+        newKing.isKing = true;
+      }
     },
     [BuildConnection]: (state) => {
       state.connection = new HubConnectionBuilder()

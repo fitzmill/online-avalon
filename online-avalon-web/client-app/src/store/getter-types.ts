@@ -10,3 +10,4 @@ export const PartyLeader = 'partyLeader';
 export const IsInGame = 'isInGame';
 export const PlayerDisplayText = 'playerDisplayText';
 export const PlayerAlignment = 'playerAlignment';
+export const PartyMembers = 'partyMembers';
