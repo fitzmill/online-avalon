@@ -17,6 +17,7 @@ import {
   SetLakedUserAlignment,
   SetCurrentQuestResult,
   SetKingUsername,
+  SetLakedUsername,
 } from './mutation-types';
 
 const registerSignalREventHandlers = (connection: signalR.HubConnection, commit: Commit) => {
@@ -53,6 +54,9 @@ const registerSignalREventHandlers = (connection: signalR.HubConnection, commit:
   });
   connection.on('ReceiveUsernamesToLake', (usernamesToLake: string[]) => {
     commit(SetUsernamesToLake, usernamesToLake);
+  });
+  connection.on('ReceiveLakedUsername', (username: string) => {
+    commit(SetLakedUsername, username);
   });
   connection.on('ReceiveNewQuestInfo', (newQuestInfo: NewQuestInfoDto) => {
     commit(SetNewQuestInfo, newQuestInfo);

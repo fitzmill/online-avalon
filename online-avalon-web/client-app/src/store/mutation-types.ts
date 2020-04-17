@@ -23,3 +23,4 @@ export const SetHostUsername = 'setHostUsername';
 export const SetPlayers = 'setPlayers';
 export const SetCurrentQuestResult = 'setCurrentQuestResult';
 export const SetKingUsername = 'setKingUsername';
+export const SetLakedUsername = 'setLakedUsername';

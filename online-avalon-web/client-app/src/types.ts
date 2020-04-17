@@ -45,8 +45,8 @@ export enum QuestResult {
 }
 
 export enum Alignment {
-    Good = 1,
-    Evil
+    Good = 'Good',
+    Evil = 'Evil'
 }
 
 export enum Role {

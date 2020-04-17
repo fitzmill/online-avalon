@@ -29,6 +29,7 @@ import {
   SendEndQuestInfo,
   LakePlayer,
   AssassinatePlayer,
+  ContinueQuestAfterLake,
 } from './action-types';
 import {
   ClearGameState,
@@ -56,6 +57,7 @@ import {
   SetQuestStage,
   SetCurrentQuestResult,
   SetKingUsername,
+  SetLakedUsername,
 } from './mutation-types';
 import {
   IsDefaultStage,
@@ -71,6 +73,8 @@ import {
   PlayerDisplayText,
   PlayerAlignment,
   PartyMembers,
+  HasLake,
+  PlayerWithLake,
 } from './getter-types';
 
 Vue.use(Vuex);
@@ -78,16 +82,24 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     isHost: false,
-    questNumber: 0,
-    username: 'fitzweeb',
+    questNumber: 1,
+    username: 'fitzmill',
     publicGameId: 'test',
     playerRole: Role.LoyalServantOfArthur,
     serverMessage: '',
     serverErrorMessage: '',
-    lakedUserAlignment: '',
-    questStage: QuestStage.ApproveParty,
-    questVotes: [] as string[],
-    usernamesToLake: [] as string[],
+    lakedUserAlignment: 'Evil',
+    lakedUsername: 'test',
+    questStage: QuestStage.Lake,
+    questVotes: [
+      'Succeed',
+      'Fail',
+    ] as string[],
+    usernamesToLake: [
+      'test2',
+      'test3',
+      'fitzweeb',
+    ] as string[],
     usernamesToAssassinate: [] as string[],
     knownUsernames: ['test1', 'test2'] as string[],
     questResults: [
@@ -101,7 +113,7 @@ export default new Vuex.Store({
       { username: 'fitzmill', isHost: true, isInParty: false },
       { username: 'fitzyaskfjlajsklfjlka;djflak;sd;fladsjflkasjf', isInParty: true },
       { username: 'fitzweeb', isKing: true, isInParty: false },
-      { username: 'test1', isInParty: true },
+      { username: 'test1', isInParty: true, hasLake: true },
       { username: 'test2', isInParty: true },
       { username: 'test3' },
       { username: 'test4', isInParty: true },
@@ -133,16 +145,17 @@ export default new Vuex.Store({
     [PlayerDisplayText]: (state) => getPlayerDisplayText(state.playerRole, state.knownUsernames),
     [PlayerAlignment]: (state) => getAlignmentForPlayer(state.playerRole),
     [PartyMembers]: (state) => state.players.filter((p) => p.isInParty),
+    [HasLake]: (state) => state.players.find((p) => p.hasLake)?.username === state.username,
+    [PlayerWithLake]: (state) => state.players.find((p) => p.hasLake),
   },
   mutations: {
     [ClearGameState]: (state) => {
       state.isHost = false;
       state.questNumber = 0;
-      state.username = '';
-      state.publicGameId = '';
       state.playerRole = Role.Default;
       state.serverMessage = '';
       state.lakedUserAlignment = '';
+      state.lakedUsername = '';
       state.knownUsernames = [];
       state.questVotes = [];
       state.usernamesToLake = [];
@@ -209,6 +222,11 @@ export default new Vuex.Store({
         p.isKing = false;
         /* eslint-enable no-param-reassign */
       });
+      state.usernamesToAssassinate = [];
+      state.usernamesToLake = [];
+      state.lakedUserAlignment = '';
+      state.lakedUsername = '';
+
       state.questNumber = newQuestInfo.newQuestNumber;
       const king = state.players.find((p) => p.username === newQuestInfo.kingUsername);
       if (king) {
@@ -260,12 +278,13 @@ export default new Vuex.Store({
     },
     [SetCurrentQuestResult]: (state) => {
       let result = QuestResult.Unknown;
-      if (state.questVotes.some((v) => v === 'EvilWins')) {
+      if (state.questVotes.some((v) => v === 'Fail')) {
         result = QuestResult.EvilWins;
       } else {
         result = QuestResult.GoodWins;
       }
-      state.questResults[state.questNumber] = result;
+      console.log(result);
+      state.questResults.splice(state.questNumber - 1, 1, result);
     },
     [SetKingUsername]: (state, username: string) => {
       const oldKing = state.players.find((p) => p.isKing);
@@ -276,6 +295,9 @@ export default new Vuex.Store({
       if (newKing) {
         newKing.isKing = true;
       }
+    },
+    [SetLakedUsername]: (state, username: string) => {
+      state.lakedUsername = username;
     },
     [BuildConnection]: (state) => {
       state.connection = new HubConnectionBuilder()
@@ -337,6 +359,9 @@ export default new Vuex.Store({
     },
     [SendEndQuestInfo]: async ({ state }) => {
       await state.connection.invoke('SendEndQuestInfo');
+    },
+    [ContinueQuestAfterLake]: async ({ state }) => {
+      await state.connection.invoke('ContinueEndQuestAfterLake');
     },
     [LakePlayer]: async ({ state }, username: string) => {
       await state.connection.invoke('LakePlayer', username);

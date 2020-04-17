@@ -148,10 +148,47 @@ namespace online_avalon_web.Hubs
             }
             else if (_gameEngine.TryMoveToLakeStage(GameId, out string usernameWithLake, out IEnumerable<string> usernamesToLake))
             {
-                await Clients.Group(PublicGameId).MoveToLakeStage(usernameWithLake);
                 await Clients.User(CustomUserIdProvider.GetUserId(usernameWithLake, PublicGameId)).ReceiveUsernamesToLake(usernamesToLake);
+                await Clients.Group(PublicGameId).MoveToLakeStage(usernameWithLake);
             }
             else if (_gameEngine.TryMoveToNextQuest(GameId, out Game updatedGame))
+            {
+                await Clients.Group(PublicGameId).ReceiveNewQuestInfo(new NewQuestDTO
+                {
+                    KingUsername = updatedGame.KingUsername,
+                    UsernameWithLake = updatedGame.UsernameWithLake,
+                    NewQuestNumber = updatedGame.QuestNumber
+                });
+            }
+            else if (_gameEngine.TryMoveToAssassinationStage(GameId, out string assassin, out IEnumerable<string> usernamesToAssassinate))
+            {
+                await Clients.User(CustomUserIdProvider.GetUserId(assassin, PublicGameId)).ReceiveUsernamesToAssassinate(usernamesToAssassinate);
+                await Clients.Group(PublicGameId).MoveToAssassinationStage();
+            }
+            else
+            {
+                // this only happens if evil has succeeded in 3 quests
+                var game = _gameEngine.EndGame(GameId, GameResultEnum.EvilWins);
+                await Clients.Group(PublicGameId).EndGameAndReceiveSummary(game);
+            }
+        }
+
+        public async Task LakePlayer(string username)
+        {
+            if (_playerEngine.TryLakePlayer(GameId, username, out AlignmentEnum? alignment))
+            {
+                await Clients.Caller.ReceiveLakeAlignment(alignment.Value);
+                await Clients.Group(PublicGameId).ReceiveLakedUsername(username);
+            }
+            else
+            {
+                throw new ArgumentException($"{username} cannot be laked");
+            }
+        }
+
+        public async Task ContinueEndQuestAfterLake()
+        {
+            if (_gameEngine.TryMoveToNextQuest(GameId, out Game updatedGame))
             {
                 await Clients.Group(PublicGameId).ReceiveNewQuestInfo(new NewQuestDTO
                 {
@@ -170,39 +207,6 @@ namespace online_avalon_web.Hubs
                 // this only happens if evil has succeeded in 3 quests
                 var game = _gameEngine.EndGame(GameId, GameResultEnum.EvilWins);
                 await Clients.Group(PublicGameId).EndGameAndReceiveSummary(game);
-            }
-        }
-
-        public async Task LakePlayer(string username)
-        {
-            if (_playerEngine.TryLakePlayer(GameId, username, out AlignmentEnum? alignment))
-            {
-                await Clients.Caller.ReceiveLakeAlignment(alignment.Value);
-
-                if (_gameEngine.TryMoveToNextQuest(GameId, out Game updatedGame))
-                {
-                    await Clients.Group(PublicGameId).ReceiveNewQuestInfo(new NewQuestDTO
-                    {
-                        KingUsername = updatedGame.KingUsername,
-                        UsernameWithLake = updatedGame.UsernameWithLake,
-                        NewQuestNumber = updatedGame.QuestNumber
-                    });
-                }
-                else if (_gameEngine.TryMoveToAssassinationStage(GameId, out string assassin, out IEnumerable<string> usernamesToAssassinate))
-                {
-                    await Clients.Group(PublicGameId).MoveToAssassinationStage();
-                    await Clients.User(CustomUserIdProvider.GetUserId(assassin, PublicGameId)).ReceiveUsernamesToAssassinate(usernamesToAssassinate);
-                }
-                else
-                {
-                    // this only happens if evil has succeeded in 3 quests
-                    var game = _gameEngine.EndGame(GameId, GameResultEnum.EvilWins);
-                    await Clients.Group(PublicGameId).EndGameAndReceiveSummary(game);
-                }
-            }
-            else
-            {
-                throw new ArgumentException($"{username} cannot be laked");
             }
         }
 

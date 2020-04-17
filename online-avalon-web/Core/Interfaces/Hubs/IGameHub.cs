@@ -18,6 +18,7 @@ namespace online_avalon_web.Core.Interfaces.Hubs
         Task ReceiveQuestVotes(IEnumerable<QuestVoteOptionsEnum> questVotes);
         Task MoveToLakeStage(string usernameWithLake);
         Task ReceiveUsernamesToLake(IEnumerable<string> usernamesToLake);
+        Task ReceiveLakedUsername(string username);
         Task ReceiveNewQuestInfo(NewQuestDTO newQuestInfo);
         Task MoveToAssassinationStage();
         Task ReceiveUsernamesToAssassinate(IEnumerable<string> usernamesToAssassinate);

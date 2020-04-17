@@ -6,8 +6,8 @@
       <div v-else>
         <h3>Quest History</h3>
         <div class="uk-grid-divider uk-grid-medium uk-child-width-auto uk-flex-center" uk-grid>
-          <div v-for="(result, i) in questResults" :key="i"
-            :class="[i === questNumber ? 'uk-text-bold' : '']">
+          <div v-for="(result, i) in questResults" :key="`${result}:${i}`"
+            :class="[i === questNumber-1 ? 'uk-text-bold' : '']">
             {{i+1}}
             <div :class="[getClassForQuestResult(i)]">{{result}}</div>
           </div>
@@ -55,6 +55,9 @@ import ChooseParty from '@/components/ChooseParty.vue';
 import PlayerInfo from '@/components/PlayerInfo.vue';
 import ApproveParty from '@/components/ApproveParty.vue';
 import ApprovePartyResults from '@/components/ApprovePartyResults.vue';
+import VoteQuest from '@/components/VoteQuest.vue';
+import VoteQuestResults from '@/components/VoteQuestResults.vue';
+import Lake from '@/components/Lake.vue';
 import {
   IsDefaultStage,
   IsChoosePartyStage,
@@ -74,6 +77,8 @@ import { QuestResult, Player } from '../types';
     PlayerInfo,
     ApproveParty,
     ApprovePartyResults,
+    VoteQuest,
+    VoteQuestResults,
   },
 })
 export default class Play extends Vue {
@@ -101,6 +106,8 @@ export default class Play extends Vue {
 
   @State private userApprovalVotes!: string;
 
+  @State private questVotes!: string[];
+
   get haveUserApprovalVotes(): boolean {
     return Object.keys(this.userApprovalVotes).length !== 0;
   }
@@ -114,6 +121,15 @@ export default class Play extends Vue {
         return ApproveParty;
       }
       return ApprovePartyResults;
+    }
+    if (this.isVoteQuestStage) {
+      if (this.questVotes.length === 0) {
+        return VoteQuest;
+      }
+      return VoteQuestResults;
+    }
+    if (this.isLakeStage) {
+      return Lake;
     }
     return { template: '<div></div>' };
   }
