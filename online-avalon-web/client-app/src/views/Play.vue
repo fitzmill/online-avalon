@@ -58,6 +58,8 @@ import ApprovePartyResults from '@/components/ApprovePartyResults.vue';
 import VoteQuest from '@/components/VoteQuest.vue';
 import VoteQuestResults from '@/components/VoteQuestResults.vue';
 import Lake from '@/components/Lake.vue';
+import Assassinate from '@/components/Assassinate.vue';
+import GameSummary from '@/components/GameSummary.vue';
 import {
   IsDefaultStage,
   IsChoosePartyStage,
@@ -130,6 +132,12 @@ export default class Play extends Vue {
     }
     if (this.isLakeStage) {
       return Lake;
+    }
+    if (this.isAssassinateStage) {
+      return Assassinate;
+    }
+    if (this.isEndStage) {
+      return GameSummary;
     }
     return { template: '<div></div>' };
   }

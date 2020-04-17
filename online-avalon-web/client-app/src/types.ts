@@ -68,8 +68,8 @@ export enum ApprovalVoteOptions {
 }
 
 export interface GameSummary {
-    gameResult: GameResult;
-    players: Player[];
+    gameResult?: GameResult;
+    players?: Player[];
 }
 
 export enum GameResult {

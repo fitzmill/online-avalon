@@ -9,6 +9,7 @@ import {
   Player,
   QuestResult,
   Role,
+  GameSummary,
 } from '@/types';
 import { HubConnectionBuilder, HubConnection, HubConnectionState } from '@microsoft/signalr';
 import axios from 'axios';
@@ -82,26 +83,19 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     isHost: false,
-    questNumber: 1,
-    username: 'fitzmill',
-    publicGameId: 'test',
-    playerRole: Role.LoyalServantOfArthur,
+    questNumber: 0,
+    username: '',
+    publicGameId: '',
+    playerRole: Role.Default,
     serverMessage: '',
     serverErrorMessage: '',
-    lakedUserAlignment: 'Evil',
-    lakedUsername: 'test',
-    questStage: QuestStage.Lake,
-    questVotes: [
-      'Succeed',
-      'Fail',
-    ] as string[],
-    usernamesToLake: [
-      'test2',
-      'test3',
-      'fitzweeb',
-    ] as string[],
+    lakedUserAlignment: '',
+    lakedUsername: '',
+    questStage: QuestStage.Default,
+    questVotes: [] as string[],
+    usernamesToLake: [] as string[],
     usernamesToAssassinate: [] as string[],
-    knownUsernames: ['test1', 'test2'] as string[],
+    knownUsernames: [] as string[],
     questResults: [
       QuestResult.Unknown,
       QuestResult.Unknown,
@@ -109,24 +103,9 @@ export default new Vuex.Store({
       QuestResult.Unknown,
       QuestResult.Unknown,
     ] as QuestResult[],
-    players: [
-      { username: 'fitzmill', isHost: true, isInParty: false },
-      { username: 'fitzyaskfjlajsklfjlka;djflak;sd;fladsjflkasjf', isInParty: true },
-      { username: 'fitzweeb', isKing: true, isInParty: false },
-      { username: 'test1', isInParty: true, hasLake: true },
-      { username: 'test2', isInParty: true },
-      { username: 'test3' },
-      { username: 'test4', isInParty: true },
-      { username: 'test5', isInParty: true },
-      { username: 'test6' },
-      { username: 'test7' },
-    ] as Player[],
-    userApprovalVotes: {
-      fitzweeb: 'Approve',
-      fitzmill: 'Reject',
-      test1: 'Reject',
-    } as { [key: string]: string },
-    gameSummary: {},
+    players: [] as Player[],
+    userApprovalVotes: {} as { [key: string]: string },
+    gameSummary: {} as GameSummary,
     connection: new HubConnectionBuilder()
       .withUrl('/hubs/game')
       .build() as HubConnection,

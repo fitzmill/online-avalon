@@ -42,7 +42,7 @@ export function getPlayerDisplayText(playerRole: Role, knownUsernames: string[])
     for (let i = knownUsernames.length - 1; i > 1; i -= 1) {
       str = str.concat(`${knownUsernames[i]}, `);
     }
-    str = `${knownUsernames[1]} and ${knownUsernames[0]} are also evil.`;
+    return str.concat(`${knownUsernames[1]} and ${knownUsernames[0]} are also evil.`);
   }
   if (playerRole === Role.Oberon) {
     return 'You are Oberon. You know nothing, wreak havoc as you wish.';

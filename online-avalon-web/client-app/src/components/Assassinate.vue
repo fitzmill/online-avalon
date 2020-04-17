@@ -15,14 +15,14 @@
       </div>
       <button
         class="uk-button uk-button-success uk-margin-top"
-        @click="lakePlayer()"
+        @click="assassinate()"
         :disabled="loading"
       >
         Submit
       </button>
     </div>
     <div v-else>
-      <h4>Waiting on the assassin</h4>
+      <h4>Waiting on the Assassin</h4>
     </div>
   </div>
 </template>
@@ -44,7 +44,7 @@ export default class Assassinate extends Vue {
     return this.playerRole === Role.Assassin;
   }
 
-  private assassinatedUsername!: string;
+  private assassinatedUsername = '';
 
   private loading = false;
 
