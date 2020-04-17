@@ -32,6 +32,7 @@ export interface Player {
     hasLake?: boolean;
     isKing?: boolean;
     isInParty?: boolean;
+    role?: Role;
 }
 
 export interface CreateGameOptions {
@@ -64,4 +65,14 @@ export enum Role {
 export enum ApprovalVoteOptions {
     Approve = 'Approve',
     Reject = 'Reject'
+}
+
+export interface GameSummary {
+    gameResult: GameResult;
+    players: Player[];
+}
+
+export enum GameResult {
+    GoodWins = 'GoodWins',
+    EvilWins = 'EvilWins'
 }
