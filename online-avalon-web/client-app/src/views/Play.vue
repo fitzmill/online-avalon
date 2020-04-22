@@ -7,7 +7,7 @@
         <h3>Quest History</h3>
         <div class="uk-grid-divider uk-grid-medium uk-child-width-auto uk-flex-center" uk-grid>
           <div v-for="(result, i) in questResults" :key="`${result}:${i}`"
-            :class="[i === questNumber-1 ? 'uk-text-bold' : '']">
+            :class="[i === questNumber-1 ? 'uk-text-bold' : 'uk-text-muted']">
             {{i+1}}
             <div :class="[getClassForQuestResult(i)]">{{result}}</div>
           </div>

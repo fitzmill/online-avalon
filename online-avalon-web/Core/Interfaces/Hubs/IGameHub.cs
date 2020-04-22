@@ -15,6 +15,7 @@ namespace online_avalon_web.Core.Interfaces.Hubs
         Task RemovePlayerFromParty(string username);
         Task StartApprovalVote(IEnumerable<string> partyUsernames);
         Task ReceiveUserApprovalVotes(Dictionary<string, ApprovalVoteOptionsEnum> userVotes, string newKingUsername);
+        Task ReceiveUserApprovalVotes(Dictionary<string, ApprovalVoteOptionsEnum> userVotes, string newKingUsername, Game gameSummary);
         Task ReceiveQuestVotes(IEnumerable<QuestVoteOptionsEnum> questVotes);
         Task MoveToLakeStage(string usernameWithLake);
         Task ReceiveUsernamesToLake(IEnumerable<string> usernamesToLake);

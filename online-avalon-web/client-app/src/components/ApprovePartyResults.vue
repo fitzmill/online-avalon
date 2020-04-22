@@ -1,5 +1,6 @@
 <template>
   <div>
+    <PartyNumber />
     <transition-group name="user-approval-vote-list">
       <div v-for="vote in staggeredApprovalVotes" :key="vote.username">
         {{vote.username}}:
@@ -19,11 +20,18 @@
 import { Vue, Component } from 'vue-property-decorator';
 import { State, Mutation } from 'vuex-class';
 import { ApprovalVoteOptions, QuestStage } from '../types';
-import { SetQuestStage } from '../store/mutation-types';
+import { SetQuestStage, IncrementPartyNumber } from '../store/mutation-types';
+import PartyNumber from './PartyNumber.vue';
 
-@Component
+@Component({
+  components: {
+    PartyNumber,
+  },
+})
 export default class ApprovePartyResults extends Vue {
   @State private userApprovalVotes!: { [key: string]: string };
+
+  @State private partyNumber!: number;
 
   private voteClassMap = {
     Approve: 'uk-text-success',
@@ -46,7 +54,12 @@ export default class ApprovePartyResults extends Vue {
 
     setTimeout(() => {
       if (failed) {
-        this.setQuestStage(QuestStage.ChooseParty);
+        if (this.partyNumber === 5) {
+          this.setQuestStage(QuestStage.End);
+        } else {
+          this.incrementPartyNumber();
+          this.setQuestStage(QuestStage.ChooseParty);
+        }
       } else {
         this.setQuestStage(QuestStage.VoteQuest);
       }
@@ -56,6 +69,8 @@ export default class ApprovePartyResults extends Vue {
   }
 
   @Mutation(SetQuestStage) private setQuestStage!: (stage: QuestStage) => void;
+
+  @Mutation(IncrementPartyNumber) private incrementPartyNumber!: () => void;
 
   mounted() {
     this.didPartyFail = null;

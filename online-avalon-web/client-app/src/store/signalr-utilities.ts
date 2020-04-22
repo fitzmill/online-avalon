@@ -39,12 +39,16 @@ const registerSignalREventHandlers = (connection: signalR.HubConnection, commit:
     commit(SetPartyUsernames, partyUsernames);
     commit(SetQuestStage, QuestStage.ApproveParty);
   });
-  connection.on('ReceiveUserApprovalVotes', (userApprovalVotes: { [key: string]: string }, newKingUsername: string) => {
-    commit(SetUserApprovalVotes, userApprovalVotes);
-    if (newKingUsername) {
-      commit(SetKingUsername, newKingUsername);
-    }
-  });
+  connection.on('ReceiveUserApprovalVotes',
+    (userApprovalVotes: { [key: string]: string }, newKingUsername: string, summary) => {
+      commit(SetUserApprovalVotes, userApprovalVotes);
+      if (newKingUsername) {
+        commit(SetKingUsername, newKingUsername);
+      }
+      if (summary) {
+        commit(SetGameSummary, summary);
+      }
+    });
   connection.on('ReceiveQuestVotes', (questVotes: string[]) => {
     commit(SetQuestVotes, questVotes);
     commit(SetCurrentQuestResult);

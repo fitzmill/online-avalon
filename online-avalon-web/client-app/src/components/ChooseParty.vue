@@ -1,5 +1,6 @@
 <template>
   <div>
+    <PartyNumber />
     <div v-if="isLeader">
       <h4>Choose your party</h4>
       <div class="uk-child-width-1-2 uk-grid-small" uk-grid>
@@ -47,8 +48,13 @@ import { Player, QuestStage } from '@/types';
 import { IsLeader } from '../store/getter-types';
 import { AddUserToParty, RemoveUserFromParty, SubmitParty } from '../store/action-types';
 import { AddPlayerToParty, RemovePlayerFromParty, SetQuestStage } from '../store/mutation-types';
+import PartyNumber from './PartyNumber.vue';
 
-@Component
+@Component({
+  components: {
+    PartyNumber,
+  },
+})
 export default class ChooseParty extends Vue {
   @Getter(IsLeader) private isLeader!: boolean;
 

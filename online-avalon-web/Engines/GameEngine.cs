@@ -224,11 +224,16 @@ namespace online_avalon_web.Engines
 
             userVotes = players.ToDictionary(p => p.Username, p => p.ApprovalVote.Value);
             newKingUsername = null;
+            //check if party fails
             if (players.Count(p => p.ApprovalVote == ApprovalVoteOptionsEnum.Approve) < players.Count / 2)
             {
+                // assign new king
                 var newKingIndex = (players.FindIndex(p => p.Username == game.KingUsername) + 1) % game.NumPlayers;
                 newKingUsername = players[newKingIndex].Username;
                 game.KingUsername = newKingUsername;
+                // update party number
+                game.PartyNumber++;
+                // reset players
                 foreach (Player p in players)
                 {
                     p.ApprovalVote = null;
@@ -283,6 +288,8 @@ namespace online_avalon_web.Engines
                 // update game
                 var newKingIndex = (game.Players.FindIndex(p => p.Username == game.KingUsername) + 1) % game.NumPlayers;
                 game.KingUsername = game.Players[newKingIndex].Username;
+
+                game.PartyNumber = 1;
 
                 _gameAccessor.UpdateGame(game);
                 updatedGame = game;
@@ -394,6 +401,13 @@ namespace online_avalon_web.Engines
                 gameSummary = null;
                 return false;
             }
+        }
+
+        public bool HaveFivePartiesFailed(long gameId)
+        {
+            var game = _gameAccessor.GetGame(gameId);
+
+            return game.PartyNumber == 6;
         }
     }
 }

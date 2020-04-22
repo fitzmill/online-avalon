@@ -1,5 +1,6 @@
 <template>
   <div>
+    <PartyNumber />
     <h4>Do you approve of this party?</h4>
     <div class="uk-child-width-1-2 uk-grid-small" uk-grid>
       <div v-for="player in partyMembers" :key="player.username">
@@ -33,8 +34,13 @@ import { Vue, Component } from 'vue-property-decorator';
 import { Player } from '@/types';
 import { Getter, Action } from 'vuex-class';
 import { PartyMembers } from '../store/getter-types';
+import PartyNumber from './PartyNumber.vue';
 
-@Component
+@Component({
+  components: {
+    PartyNumber,
+  },
+})
 export default class ApproveParty extends Vue {
   @Getter(PartyMembers) private partyMembers!: Player[];
 

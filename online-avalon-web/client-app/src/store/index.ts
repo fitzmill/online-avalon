@@ -59,6 +59,7 @@ import {
   SetCurrentQuestResult,
   SetKingUsername,
   SetLakedUsername,
+  IncrementPartyNumber,
 } from './mutation-types';
 import {
   IsDefaultStage,
@@ -83,7 +84,8 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     isHost: false,
-    questNumber: 0,
+    questNumber: 1,
+    partyNumber: 5,
     username: '',
     publicGameId: '',
     playerRole: Role.Default,
@@ -91,7 +93,7 @@ export default new Vuex.Store({
     serverErrorMessage: '',
     lakedUserAlignment: '',
     lakedUsername: '',
-    questStage: QuestStage.Default,
+    questStage: QuestStage.ApproveParty,
     questVotes: [] as string[],
     usernamesToLake: [] as string[],
     usernamesToAssassinate: [] as string[],
@@ -104,7 +106,9 @@ export default new Vuex.Store({
       QuestResult.Unknown,
     ] as QuestResult[],
     players: [] as Player[],
-    userApprovalVotes: {} as { [key: string]: string },
+    userApprovalVotes: {
+      test: 'Reject',
+    } as { [key: string]: string },
     gameSummary: {} as GameSummary,
     connection: new HubConnectionBuilder()
       .withUrl('/hubs/game')
@@ -153,6 +157,7 @@ export default new Vuex.Store({
     [SetInitialGameData]: (state, initialGameData: StartGameDto) => {
       state.playerRole = initialGameData.playerRole;
       state.knownUsernames = initialGameData.knownUsernames;
+      state.partyNumber = 1;
       const king = state.players.find((p) => p.username === initialGameData.king);
       if (king) {
         king.isKing = true;
@@ -201,6 +206,7 @@ export default new Vuex.Store({
         p.isKing = false;
         /* eslint-enable no-param-reassign */
       });
+      state.partyNumber = 1;
       state.usernamesToAssassinate = [];
       state.usernamesToLake = [];
       state.lakedUserAlignment = '';
@@ -277,6 +283,9 @@ export default new Vuex.Store({
     },
     [SetLakedUsername]: (state, username: string) => {
       state.lakedUsername = username;
+    },
+    [IncrementPartyNumber]: (state) => {
+      state.partyNumber += 1;
     },
     [BuildConnection]: (state) => {
       state.connection = new HubConnectionBuilder()

@@ -57,6 +57,13 @@ namespace online_avalon_web.Core.Interfaces.Engines
         bool TryToApproveParty(long gameId, out Dictionary<string, ApprovalVoteOptionsEnum> userVotes, out string newKingUsername);
 
         /// <summary>
+        /// Checks if 5 parties have failed
+        /// </summary>
+        /// <param name="gameId"></param>
+        /// <returns></returns>
+        bool HaveFivePartiesFailed(long gameId);
+
+        /// <summary>
         /// Checks if all players have voted to succeed/fail the quest
         /// </summary>
         /// <param name="gameId"></param>

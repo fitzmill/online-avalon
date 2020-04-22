@@ -126,7 +126,16 @@ namespace online_avalon_web.Hubs
 
             if (_gameEngine.TryToApproveParty(GameId, out Dictionary<string, ApprovalVoteOptionsEnum> userVotes, out string newKingUsername))
             {
-                await Clients.Groups(PublicGameId).ReceiveUserApprovalVotes(userVotes, newKingUsername);
+                if (_gameEngine.HaveFivePartiesFailed(GameId))
+                {
+                    var gameSummary = _gameEngine.EndGame(GameId, GameResultEnum.EvilWins);
+                    await Clients.Groups(PublicGameId).ReceiveUserApprovalVotes(userVotes, newKingUsername, gameSummary);
+                }
+                else
+                {
+                    await Clients.Groups(PublicGameId).ReceiveUserApprovalVotes(userVotes, newKingUsername);
+
+                }
             }
         }
 
