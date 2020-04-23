@@ -233,5 +233,14 @@ namespace online_avalon_web.Hubs
                 await Clients.Group(PublicGameId).EndGameAndReceiveSummary(game);
             }
         }
+
+        public async Task RestartGame()
+        {
+            var newGame = _gameEngine.RestartGame(GameId);
+
+            GameId = newGame.GameId;
+
+            await Clients.Group(PublicGameId).ResetGame();
+        }
     }
 }

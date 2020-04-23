@@ -18,6 +18,7 @@ import {
   SetCurrentQuestResult,
   SetKingUsername,
   SetLakedUsername,
+  ClearGameState,
 } from './mutation-types';
 
 const registerSignalREventHandlers = (connection: signalR.HubConnection, commit: Commit) => {
@@ -78,6 +79,9 @@ const registerSignalREventHandlers = (connection: signalR.HubConnection, commit:
   });
   connection.on('ReceiveLakeAlignment', (lakedUserAlignment: string) => {
     commit(SetLakedUserAlignment, lakedUserAlignment);
+  });
+  connection.on('ResetGame', () => {
+    commit(ClearGameState);
   });
 };
 

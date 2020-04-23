@@ -17,8 +17,9 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
-import { State } from 'vuex-class';
+import { State, Action } from 'vuex-class';
 import { GameSummary as GameSummaryType, GameResult } from '@/types';
+import { RestartGame } from '../store/action-types';
 
 @Component
 export default class GameSummary extends Vue {
@@ -29,6 +30,12 @@ export default class GameSummary extends Vue {
   get resultText() {
     return this.gameSummary.gameResult === GameResult.GoodWins
       ? 'Good Wins!' : 'Evil Wins!';
+  }
+
+  @Action(RestartGame) private dispatchRestartGame!: () => Promise<void>;
+
+  private async restartGame() {
+    await this.dispatchRestartGame();
   }
 }
 </script>

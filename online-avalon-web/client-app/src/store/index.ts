@@ -31,6 +31,7 @@ import {
   LakePlayer,
   AssassinatePlayer,
   ContinueQuestAfterLake,
+  RestartGame,
 } from './action-types';
 import {
   ClearGameState,
@@ -133,17 +134,16 @@ export default new Vuex.Store({
   },
   mutations: {
     [ClearGameState]: (state) => {
-      state.isHost = false;
       state.questNumber = 0;
+      state.partyNumber = 0;
       state.playerRole = Role.Default;
-      state.serverMessage = '';
+      state.questStage = QuestStage.Default;
       state.lakedUserAlignment = '';
       state.lakedUsername = '';
       state.knownUsernames = [];
       state.questVotes = [];
       state.usernamesToLake = [];
       state.usernamesToAssassinate = [];
-      state.players = [];
       state.userApprovalVotes = {};
       state.gameSummary = {};
       state.questResults = [
@@ -356,6 +356,9 @@ export default new Vuex.Store({
     },
     [AssassinatePlayer]: async ({ state }, username: string) => {
       await state.connection.invoke('AssassinatePlayer', username);
+    },
+    [RestartGame]: async ({ state }) => {
+      await state.connection.invoke('RestartGame');
     },
   },
   modules: {},

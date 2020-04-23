@@ -25,5 +25,6 @@ namespace online_avalon_web.Core.Interfaces.Hubs
         Task ReceiveUsernamesToAssassinate(IEnumerable<string> usernamesToAssassinate);
         Task EndGameAndReceiveSummary(Game game);
         Task ReceiveLakeAlignment(AlignmentEnum alignment);
+        Task ResetGame();
     }
 }
