@@ -18,6 +18,7 @@ namespace online_avalon_web.Core.Models
         public QuestVoteOptionsEnum? QuestVote { get; set; }
         public bool InParty { get; set; }
         public bool HasHeldLake { get; set; }
+        public bool Disconnected { get; set; }
 
         [JsonIgnore]
         public Game Game { get; set; }

@@ -16,6 +16,7 @@
           class="uk-input"
           v-bind:class="{ 'uk-form-danger': errors.publicGameId }"
           type="text"
+          @focus="$event.target.select()"
           placeholder="Enter room name" />
         <input
           v-model="username"
@@ -48,7 +49,7 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
-import { Action, State } from 'vuex-class';
+import { Action } from 'vuex-class';
 import UIkit from 'uikit';
 import CreateGame from '@/components/CreateGame.vue';
 import { SetUsername, SetPublicGameId } from '@/store/mutation-types';
@@ -64,8 +65,6 @@ export default class Home extends Vue {
   private creatingGame = false;
 
   @Action(JoinGame) dispatchJoinGame!: () => Promise<void>;
-
-  @State serverMessage!: string;
 
   get username() {
     return this.$store.state.username;
@@ -110,9 +109,9 @@ export default class Home extends Vue {
 
     try {
       await this.dispatchJoinGame();
-      this.$router.push(PlayRoute);
+      this.$router.push({ path: `${PlayRoute}/${this.publicGameId}/${this.username}` });
     } catch (error) {
-      UIkit.notification(this.serverMessage, { status: 'danger' });
+      UIkit.notification(error.message, { status: 'danger' });
     }
   }
 }

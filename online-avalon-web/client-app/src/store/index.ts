@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import createPersistedState from 'vuex-persistedstate';
 import {
   StartGameDto,
   NewQuestInfoDto,
@@ -32,6 +33,7 @@ import {
   AssassinatePlayer,
   ContinueQuestAfterLake,
   RestartGame,
+  DisconnectFromServer,
 } from './action-types';
 import {
   ClearGameState,
@@ -78,6 +80,7 @@ import {
   PartyMembers,
   HasLake,
   PlayerWithLake,
+  IsConnectedToServer,
 } from './getter-types';
 
 Vue.use(Vuex);
@@ -131,6 +134,7 @@ export default new Vuex.Store({
     [PartyMembers]: (state) => state.players.filter((p) => p.isInParty),
     [HasLake]: (state) => state.players.find((p) => p.hasLake)?.username === state.username,
     [PlayerWithLake]: (state) => state.players.find((p) => p.hasLake),
+    [IsConnectedToServer]: (state) => state.connection?.state === HubConnectionState.Connected,
   },
   mutations: {
     [ClearGameState]: (state) => {
@@ -290,6 +294,7 @@ export default new Vuex.Store({
     [BuildConnection]: (state) => {
       state.connection = new HubConnectionBuilder()
         .withUrl(`/hubs/game?username=${state.username}&publicGameId=${state.publicGameId}`)
+        .withAutomaticReconnect()
         .build();
     },
   },
@@ -360,6 +365,14 @@ export default new Vuex.Store({
     [RestartGame]: async ({ state }) => {
       await state.connection.invoke('RestartGame');
     },
+    [DisconnectFromServer]: async ({ state }) => {
+      await state.connection.stop();
+    },
   },
   modules: {},
+  plugins: [
+    createPersistedState({
+      storage: window.sessionStorage,
+    }),
+  ],
 });

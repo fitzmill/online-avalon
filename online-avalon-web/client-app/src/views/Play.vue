@@ -49,7 +49,10 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
-import { Getter, State } from 'vuex-class';
+import {
+  Getter, State, Mutation, Action,
+} from 'vuex-class';
+import { Route } from 'vue-router';
 import WaitingRoom from '@/components/WaitingRoom.vue';
 import ChooseParty from '@/components/ChooseParty.vue';
 import PlayerInfo from '@/components/PlayerInfo.vue';
@@ -69,8 +72,11 @@ import {
   IsAssassinateStage,
   IsEndStage,
   PartyLeader,
+  IsConnectedToServer,
 } from '../store/getter-types';
 import { QuestResult, Player } from '../types';
+import { DisconnectFromServer, JoinGame } from '../store/action-types';
+import { ClearGameState, SetUsername, SetPublicGameId } from '../store/mutation-types';
 
 @Component({
   components: {
@@ -99,6 +105,8 @@ export default class Play extends Vue {
   @Getter(IsEndStage) private isEndStage!: boolean;
 
   @Getter(PartyLeader) private partyLeader!: Player;
+
+  @Getter(IsConnectedToServer) private isConnectedToServer!: boolean;
 
   @State private questResults!: QuestResult[];
 
@@ -150,6 +158,34 @@ export default class Play extends Vue {
       return 'uk-text-success uk-text-bold';
     }
     return 'uk-text-danger uk-text-bold';
+  }
+
+  @Action(JoinGame) private dispatchJoinGame!: () => Promise<void>;
+
+  @Action(DisconnectFromServer) private disconnectFromServer!: () => void;
+
+  @Mutation(ClearGameState) private clearGameState!: () => void;
+
+  @Mutation(SetUsername) private setUsername!: (username: string) => void;
+
+  @Mutation(SetPublicGameId) private setPublicGameId!: (id: string) => void;
+
+  mounted() {
+    if (!this.isConnectedToServer) {
+      console.log(this.$router.currentRoute.params);
+      this.setUsername(this.$router.currentRoute.params.username);
+      this.setPublicGameId(this.$router.currentRoute.params.publicGameId);
+      this.dispatchJoinGame();
+    }
+  }
+
+  beforeRouteLeave(to: Route, from: Route, next: () => void) {
+    this.clearGameState();
+    next();
+  }
+
+  beforeDestroy() {
+    this.disconnectFromServer();
   }
 }
 </script>

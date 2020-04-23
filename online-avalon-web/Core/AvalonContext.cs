@@ -38,6 +38,8 @@ namespace online_avalon_web.Core
                     .HasForeignKey(e => e.GameId);
                 entity.Property(e => e.Role)
                     .HasConversion(new EnumToStringConverter<RoleEnum>());
+
+                entity.HasQueryFilter(e => !e.Disconnected);
             });
 
             modelBuilder.Entity<Quest>(entity =>

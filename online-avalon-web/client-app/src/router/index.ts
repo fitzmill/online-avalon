@@ -21,7 +21,7 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/About.vue'),
   },
   {
-    path: PlayRoute,
+    path: `${PlayRoute}/:publicGameId/:username`,
     name: 'Play',
     component: () => import(/* webpackChunkName: "play" */ '@/views/Play.vue'),
   },

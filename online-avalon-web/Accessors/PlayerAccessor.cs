@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using online_avalon_web.Core;
 using online_avalon_web.Core.Interfaces.Accessors;
 using online_avalon_web.Core.Models;
@@ -23,7 +24,9 @@ namespace online_avalon_web.Accessors
 
         public Player GetPlayer(long gameId, string username)
         {
-            return _avalonContext.Players.FirstOrDefault(p => p.GameId == gameId && p.Username == username);
+            return _avalonContext.Players
+                .IgnoreQueryFilters()
+                .FirstOrDefault(p => p.GameId == gameId && p.Username == username);
         }
 
         public IQueryable<Player> GetPlayersInGame(long gameId)

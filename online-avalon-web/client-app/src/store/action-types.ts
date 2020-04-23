@@ -13,3 +13,4 @@ export const LakePlayer = 'lakePlayer';
 export const AssassinatePlayer = 'assassinatePlayer';
 export const ContinueQuestAfterLake = 'continueQuestAfterLake';
 export const RestartGame = 'restartGame';
+export const DisconnectFromServer = 'disconnectFromServer';

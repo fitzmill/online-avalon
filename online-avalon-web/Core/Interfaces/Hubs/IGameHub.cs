@@ -10,6 +10,7 @@ namespace online_avalon_web.Core.Interfaces.Hubs
     public interface IGameHub
     {
         Task ReceiveNewPlayer(string username, string message);
+        Task ReceiveDisconnectedPlayer(string username);
         Task StartGame(PlayerGameStatus status);
         Task AddPlayerToParty(string username);
         Task RemovePlayerFromParty(string username);

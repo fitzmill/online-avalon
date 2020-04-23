@@ -37,14 +37,44 @@ namespace online_avalon_web.Engines
                 throw new ArgumentException($"There is already a user in the game with the name {username}");
             }
 
-            game.Players.Add(new Player
+            // Check if player is reconnecting
+            var disconnectedPlayer = _playerAccessor.GetPlayer(game.GameId, username);
+            if (disconnectedPlayer != default(Player))
             {
-                Username = username
-            });
+                disconnectedPlayer.Disconnected = false;
+            }
+            else
+            {
+                game.Players.Add(new Player
+                {
+                    Username = username
+                });
+            }
+
             game.NumPlayers++;
 
             _gameAccessor.UpdateGame(game);
-            return game;
+            return new Game
+            {
+                GameId = game.GameId,
+                GameResult = game.GameResult,
+                Active = game.Active,
+                GameStatus = game.GameStatus,
+                HostUsername = game.HostUsername,
+                KingUsername = game.KingUsername,
+                NumPlayers = game.NumPlayers,
+                PartyNumber = game.PartyNumber,
+                PublicId = game.PublicId,
+                QuestNumber = game.QuestNumber,
+                Quests = game.Quests,
+                UsernameWithLake = game.UsernameWithLake,
+                Players = game.Players.Select(p => new Player
+                {
+                    Username = p.Username,
+                    ApprovalVote = p.ApprovalVote,
+                    InParty = p.InParty
+                }).ToList()
+            };
         }
 
         public bool TryCreateGame(string hostUsername, string publicGameId, out Game game)
@@ -100,7 +130,9 @@ namespace online_avalon_web.Engines
                 }
             }
 
-            _playerAccessor.RemovePlayer(player);
+            player.Disconnected = true;
+
+            _playerAccessor.UpdatePlayer(player);
             _gameAccessor.UpdateGame(game);
         }
 

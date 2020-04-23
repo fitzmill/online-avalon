@@ -6,7 +6,7 @@
       </a>
     </div>
     <div class="uk-navbar-center">
-      <a href="" class="uk-navbar-item uk-logo">Avalon</a>
+      <router-link to="/" class="uk-logo">Avalon</router-link>
     </div>
     <div id="nav-offcanvas" uk-offcanvas="overlay: true">
       <div class="uk-offcanvas-bar">

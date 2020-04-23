@@ -19,6 +19,7 @@ import {
   SetKingUsername,
   SetLakedUsername,
   ClearGameState,
+  RemovePlayerFromGame,
 } from './mutation-types';
 
 const registerSignalREventHandlers = (connection: signalR.HubConnection, commit: Commit) => {
@@ -82,6 +83,9 @@ const registerSignalREventHandlers = (connection: signalR.HubConnection, commit:
   });
   connection.on('ResetGame', () => {
     commit(ClearGameState);
+  });
+  connection.on('ReceiveDisconnectedPlayer', (username: string) => {
+    commit(RemovePlayerFromGame, username);
   });
 };
 
