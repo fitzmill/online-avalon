@@ -22,7 +22,7 @@ namespace online_avalon_web.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateGame(CreateGameDTO createGameDTO)
+        public IActionResult CreateGame([FromBody] CreateGameDTO createGameDTO)
         {
             if (!ModelState.IsValid)
             {

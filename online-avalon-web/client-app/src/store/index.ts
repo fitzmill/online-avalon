@@ -63,6 +63,7 @@ import {
   SetKingUsername,
   SetLakedUsername,
   IncrementPartyNumber,
+  ClearPlayers,
 } from './mutation-types';
 import {
   IsDefaultStage,
@@ -88,8 +89,8 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     isHost: false,
-    questNumber: 1,
-    partyNumber: 5,
+    questNumber: 0,
+    partyNumber: 0,
     username: '',
     publicGameId: '',
     playerRole: Role.Default,
@@ -97,7 +98,7 @@ export default new Vuex.Store({
     serverErrorMessage: '',
     lakedUserAlignment: '',
     lakedUsername: '',
-    questStage: QuestStage.ApproveParty,
+    questStage: QuestStage.Default,
     questVotes: [] as string[],
     usernamesToLake: [] as string[],
     usernamesToAssassinate: [] as string[],
@@ -110,9 +111,7 @@ export default new Vuex.Store({
       QuestResult.Unknown,
     ] as QuestResult[],
     players: [] as Player[],
-    userApprovalVotes: {
-      test: 'Reject',
-    } as { [key: string]: string },
+    userApprovalVotes: {} as { [key: string]: string },
     gameSummary: {} as GameSummary,
     connection: new HubConnectionBuilder()
       .withUrl('/hubs/game')
@@ -157,6 +156,9 @@ export default new Vuex.Store({
         QuestResult.Unknown,
         QuestResult.Unknown,
       ];
+    },
+    [ClearPlayers]: (state) => {
+      state.players = [];
     },
     [SetInitialGameData]: (state, initialGameData: StartGameDto) => {
       state.playerRole = initialGameData.playerRole;
@@ -305,6 +307,8 @@ export default new Vuex.Store({
       await state.connection.start();
     },
     [CreateGame]: async ({ state, commit, dispatch }) => {
+      commit(ClearGameState);
+      commit(ClearPlayers);
       const data = {
         hostUsername: state.username,
         publicGameId: state.publicGameId,
@@ -327,6 +331,8 @@ export default new Vuex.Store({
       await state.connection.invoke('StartGame', createGameOptions);
     },
     [JoinGame]: async ({ state, dispatch, commit }) => {
+      commit(ClearGameState);
+      commit(ClearPlayers);
       await dispatch(StartConnection);
       const data = await state.connection.invoke('JoinGame', state.publicGameId, state.username) as InitialGameDto;
       commit(SetPlayers, data.players.map((p) => p.username));
@@ -373,6 +379,9 @@ export default new Vuex.Store({
   plugins: [
     createPersistedState({
       storage: window.sessionStorage,
+      reducer: (state) => Object.assign({}, ...Object.keys(state)
+        .filter((key) => key !== 'connection')
+        .map((key) => ({ [key]: state[key] }))),
     }),
   ],
 });

@@ -28,8 +28,6 @@ import { PlayRoute } from '@/router/route-paths';
 
 @Component
 export default class CreateGame extends Vue {
-  @State serverMessage!: string;
-
   @Action(CreateGameAction) dispatchCreateGame!: () => Promise<void>;
 
   get username() {
@@ -71,9 +69,9 @@ export default class CreateGame extends Vue {
 
     try {
       await this.dispatchCreateGame();
-      this.$router.push(PlayRoute);
+      this.$router.push({ path: `${PlayRoute}/${this.publicGameId}/${this.username}` });
     } catch (error) {
-      UIkit.notification(this.serverMessage, { status: 'danger' });
+      UIkit.notification(error.message, { status: 'danger' });
     }
   }
 }

@@ -21,6 +21,7 @@ namespace online_avalon_web.Core
         {
             modelBuilder.Entity<Game>(entity =>
             {
+                entity.ToTable("game");
                 entity.HasKey(e => e.GameId);
                 entity.Property(e => e.GameId)
                     .ValueGeneratedOnAdd();
@@ -30,6 +31,7 @@ namespace online_avalon_web.Core
 
             modelBuilder.Entity<Player>(entity =>
             {
+                entity.ToTable("player");
                 entity.HasKey(e => e.PlayerId);
                 entity.Property(e => e.PlayerId)
                     .ValueGeneratedOnAdd();
@@ -44,6 +46,7 @@ namespace online_avalon_web.Core
 
             modelBuilder.Entity<Quest>(entity =>
             {
+                entity.ToTable("quest");
                 entity.HasKey(e => e.QuestId);
                 entity.Property(e => e.QuestId)
                     .ValueGeneratedOnAdd();
@@ -53,6 +56,16 @@ namespace online_avalon_web.Core
                 entity.Property(e => e.QuestResult)
                     .HasConversion(new EnumToStringConverter<QuestResultEnum>());
             });
+
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                entity.SetTableName(entity.GetTableName().ToLower());
+
+                foreach (var property in entity.GetProperties())
+                {
+                    property.SetColumnName(property.GetColumnName().ToLower());
+                }
+            }
         }
     }
 }

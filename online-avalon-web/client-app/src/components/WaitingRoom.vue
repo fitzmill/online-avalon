@@ -11,7 +11,7 @@
     <div class="uk-text-bold uk-margin-small-bottom">Players</div>
     <div
       v-for="player in players"
-      :key="player"
+      :key="player.username"
     >
       {{player.username}}
       <label class="uk-text-bold">{{player.isHost ? '(Host)' : ''}}</label>
@@ -81,7 +81,9 @@ export default class WaitingRoom extends Vue {
     mordred: false,
   }
 
-  private gameOptions!: CreateGameOptions;
+  private gameOptions: CreateGameOptions = {
+    optionalRoles: [],
+  }
 
   private saveOptions() {
     this.gameOptions = {

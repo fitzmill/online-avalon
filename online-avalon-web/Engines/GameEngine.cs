@@ -28,9 +28,9 @@ namespace online_avalon_web.Engines
         {
             var game = _gameAccessor.GetGameWithPlayers(publicGameId);
 
-            if (game.GameStatus != GameStatusEnum.PreGame)
+            if (game == default(Game))
             {
-                throw new InvalidOperationException("Game has already started");
+                throw new ArgumentException($"There is no active game for {publicGameId}");
             }
             else if (game.Players.Any(p => p.Username == username))
             {
@@ -45,6 +45,10 @@ namespace online_avalon_web.Engines
             }
             else
             {
+                if (game.GameStatus != GameStatusEnum.PreGame)
+                {
+                    throw new InvalidOperationException("Game has already started");
+                }
                 game.Players.Add(new Player
                 {
                     Username = username
@@ -52,6 +56,11 @@ namespace online_avalon_web.Engines
             }
 
             game.NumPlayers++;
+
+            if (string.IsNullOrEmpty(game.HostUsername))
+            {
+                game.HostUsername = username;
+            }
 
             _gameAccessor.UpdateGame(game);
             return new Game
@@ -88,6 +97,8 @@ namespace online_avalon_web.Engines
                     Active = true,
                     GameStatus = GameStatusEnum.PreGame,
                     NumPlayers = 1,
+                    PublicId = publicGameId,
+                    HostUsername = hostUsername,
                     Players = new List<Player>(new[] { new Player
                 {
                     Username = hostUsername
@@ -106,7 +117,7 @@ namespace online_avalon_web.Engines
 
         public void RemovePlayerFromGame(long gameId, string username)
         {
-            var game = _gameAccessor.GetGame(gameId);
+            var game = _gameAccessor.GetGameWithPlayers(gameId);
 
             var player = game.Players.FirstOrDefault(p => p.Username == username);
 
@@ -115,6 +126,9 @@ namespace online_avalon_web.Engines
                 return;
             }
 
+            player.Disconnected = true;
+            _playerAccessor.UpdatePlayer(player);
+
             game.NumPlayers--;
 
             if (player.Username == game.HostUsername)
@@ -122,17 +136,13 @@ namespace online_avalon_web.Engines
                 if (game.NumPlayers == 0)
                 {
                     DeactivateGame(game.PublicId);
-                    return;
+                    game.HostUsername = null;
                 }
                 else
                 {
                     game.HostUsername = game.Players.First(p => p.Username != game.HostUsername).Username;
                 }
             }
-
-            player.Disconnected = true;
-
-            _playerAccessor.UpdatePlayer(player);
             _gameAccessor.UpdateGame(game);
         }
 
