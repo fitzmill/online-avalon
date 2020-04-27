@@ -77,6 +77,7 @@ import {
 import { QuestResult, Player } from '../types';
 import { DisconnectFromServer, JoinGame } from '../store/action-types';
 import { ClearGameState, SetUsername, SetPublicGameId } from '../store/mutation-types';
+import { HomeRoute } from '../router/route-paths';
 
 @Component({
   components: {
@@ -172,10 +173,11 @@ export default class Play extends Vue {
 
   mounted() {
     if (!this.isConnectedToServer) {
-      console.log(this.$router.currentRoute.params);
       this.setUsername(this.$router.currentRoute.params.username);
       this.setPublicGameId(this.$router.currentRoute.params.publicGameId);
-      this.dispatchJoinGame();
+      this.dispatchJoinGame().catch(() => {
+        this.$router.push(HomeRoute);
+      });
     }
   }
 

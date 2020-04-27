@@ -14,7 +14,10 @@
         type="text"
         placeholder="Create a username" />
 
-      <button class="uk-button uk-button-primary" @click="createGame()">Create Game</button>
+      <button
+        class="uk-button uk-button-primary"
+        @click="createGame()"
+        :disabled="loading">Create Game</button>
     </div>
 </template>
 
@@ -49,6 +52,8 @@ export default class CreateGame extends Vue {
 
   private errors: { [key: string]: boolean} = {};
 
+  private loading = false;
+
   private async createGame() {
     const errors: { [key: string]: boolean } = {};
     let hasError = false;
@@ -66,11 +71,15 @@ export default class CreateGame extends Vue {
       return;
     }
 
+    this.loading = true;
+
     try {
       await this.dispatchCreateGame();
       this.$router.push({ path: `${PlayRoute}/${this.publicGameId}/${this.username}` });
     } catch (error) {
       // error handled in store code
+    } finally {
+      this.loading = false;
     }
   }
 }

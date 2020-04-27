@@ -46,7 +46,7 @@ import {
 import { Player, QuestStage } from '@/types';
 import { IsLeader } from '../store/getter-types';
 import { AddUserToParty, RemoveUserFromParty, SubmitParty } from '../store/action-types';
-import { AddPlayerToParty, RemovePlayerFromParty, SetQuestStage } from '../store/mutation-types';
+import { SetQuestStage } from '../store/mutation-types';
 import PartyNumber from './PartyNumber.vue';
 
 @Component({
@@ -65,10 +65,6 @@ export default class ChooseParty extends Vue {
 
   private submitLoading = false;
 
-  @Mutation(AddPlayerToParty) private addPlayerToParty!: (username: string) => void;
-
-  @Mutation(RemovePlayerFromParty) private removePlayerFromParty!: (username: string) => void;
-
   @Mutation(SetQuestStage) private setQuestStage!: (stage: QuestStage) => void;
 
   @Action(AddUserToParty) private dispatchAddUserToParty!: (username: string) => Promise<void>
@@ -82,10 +78,8 @@ export default class ChooseParty extends Vue {
     this.playerLoadingMap[player.username] = true;
     try {
       if (player.isInParty) {
-        this.removePlayerFromParty(player.username);
         await this.dispatchRemoveUserFromParty(player.username);
       } else {
-        this.addPlayerToParty(player.username);
         await this.dispatchAddUserToParty(player.username);
       }
     } catch {

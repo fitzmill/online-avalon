@@ -63,6 +63,7 @@ import {
   SetLakedUsername,
   IncrementPartyNumber,
   ClearPlayers,
+  SetUsernameWithLake,
 } from './mutation-types';
 import {
   IsDefaultStage,
@@ -79,15 +80,15 @@ import {
   PlayerAlignment,
   PartyMembers,
   HasLake,
-  PlayerWithLake,
   IsConnectedToServer,
+  IsHost,
+  PlayerWithLake,
 } from './getter-types';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    isHost: false,
     questNumber: 0,
     partyNumber: 0,
     username: '',
@@ -97,6 +98,9 @@ export default new Vuex.Store({
     serverErrorMessage: '',
     lakedUserAlignment: '',
     lakedUsername: '',
+    hostUsername: '',
+    usernameWithLake: '',
+    kingUsername: '',
     questStage: QuestStage.Default,
     questVotes: [] as string[],
     usernamesToLake: [] as string[],
@@ -124,15 +128,16 @@ export default new Vuex.Store({
     [IsLakeStage]: (state) => state.questStage === QuestStage.Lake,
     [IsAssassinateStage]: (state) => state.questStage === QuestStage.Assassinate,
     [IsEndStage]: (state) => state.questStage === QuestStage.End,
-    [IsLeader]: (state) => state.players.find((p) => p.isKing)?.username === state.username,
+    [IsLeader]: (state) => state.kingUsername === state.username,
     [PartyLeader]: (state) => state.players.find((p) => p.isKing),
     [IsInGame]: (state) => state.connection.state === HubConnectionState.Connected,
     [PlayerDisplayText]: (state) => getPlayerDisplayText(state.playerRole, state.knownUsernames),
     [PlayerAlignment]: (state) => getAlignmentForPlayer(state.playerRole),
     [PartyMembers]: (state) => state.players.filter((p) => p.isInParty),
-    [HasLake]: (state) => state.players.find((p) => p.hasLake)?.username === state.username,
-    [PlayerWithLake]: (state) => state.players.find((p) => p.hasLake),
     [IsConnectedToServer]: (state) => state.connection?.state === HubConnectionState.Connected,
+    [HasLake]: (state) => state.usernameWithLake === state.username,
+    [IsHost]: (state) => state.hostUsername === state.username,
+    [PlayerWithLake]: (state) => state.players.find((p) => p.hasLake),
   },
   mutations: {
     [ClearGameState]: (state) => {
@@ -163,7 +168,9 @@ export default new Vuex.Store({
       state.playerRole = initialGameData.playerRole;
       state.knownUsernames = initialGameData.knownUsernames;
       state.partyNumber = 1;
-      const king = state.players.find((p) => p.username === initialGameData.king);
+      state.kingUsername = initialGameData.kingUsername;
+      state.usernameWithLake = initialGameData.usernameWithLake;
+      const king = state.players.find((p) => p.username === initialGameData.kingUsername);
       if (king) {
         king.isKing = true;
       }
@@ -218,6 +225,8 @@ export default new Vuex.Store({
       state.lakedUsername = '';
 
       state.questNumber = newQuestInfo.newQuestNumber;
+      state.kingUsername = newQuestInfo.kingUsername;
+      state.usernameWithLake = newQuestInfo.usernameWithLake;
       const king = state.players.find((p) => p.username === newQuestInfo.kingUsername);
       if (king) {
         king.isKing = true;
@@ -234,7 +243,13 @@ export default new Vuex.Store({
       state.gameSummary = gameSummary;
     },
     [AddPlayerToGame]: (state, username: string) => {
-      state.players.push({ username, isHost: false });
+      state.players.push({
+        username,
+        hasLake: state.usernameWithLake === username,
+        isKing: state.kingUsername === username,
+        isInParty: false,
+        role: Role.Default,
+      });
     },
     [RemovePlayerFromGame]: (state, username) => {
       const index = state.players.findIndex((p) => p.username === username);
@@ -256,13 +271,7 @@ export default new Vuex.Store({
       state.publicGameId = publicGameId;
     },
     [SetHostUsername]: (state, username) => {
-      const player = state.players.find((p) => p.username === username);
-      if (player) {
-        player.isHost = true;
-        if (username === state.username) {
-          state.isHost = true;
-        }
-      }
+      state.hostUsername = username;
     },
     [SetPlayers]: (state, players) => {
       state.players = players;
@@ -295,6 +304,9 @@ export default new Vuex.Store({
     },
     [IncrementPartyNumber]: (state) => {
       state.partyNumber += 1;
+    },
+    [SetUsernameWithLake]: (state, username: string) => {
+      state.usernameWithLake = username;
     },
     [BuildConnection]: (state) => {
       state.connection = new HubConnectionBuilder()
@@ -347,11 +359,20 @@ export default new Vuex.Store({
       }
       try {
         const data = await state.connection.invoke('JoinGame', state.publicGameId, state.username) as InitialGameDto;
-        commit(SetPlayers, data.players.map((p) => ({ username: p.username })));
+        commit(SetPlayers, data.players.map((p) => ({
+          username: p.username,
+          role: Role.Default,
+          isInParty: p.isInParty,
+          isKing: data.kingUsername === p.username,
+          hasLake: data.usernameWithLake === p.username,
+        } as Player)));
         commit(SetHostUsername, data.hostUsername);
+        commit(SetKingUsername, data.kingUsername);
+        commit(SetUsernameWithLake, data.usernameWithLake);
+        commit(SetQuestStage, data.questStage);
       } catch (error) {
         commit(SetServerErrorMessage, formatServerErrorMessage(error.message));
-        commit(DisconnectFromServer);
+        await dispatch(DisconnectFromServer);
         throw error;
       }
     },
@@ -409,7 +430,7 @@ export default new Vuex.Store({
     createPersistedState({
       storage: window.sessionStorage,
       reducer: (state) => Object.assign({}, ...Object.keys(state)
-        .filter((key) => key !== 'connection' && key !== 'isHost')
+        .filter((key) => key !== 'connection' && key !== 'hostUsername')
         .map((key) => ({ [key]: state[key] }))),
     }),
   ],

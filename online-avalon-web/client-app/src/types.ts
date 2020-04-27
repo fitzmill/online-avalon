@@ -2,11 +2,19 @@ export interface StartGameDto {
     playerRole: Role;
     knownUsernames: string[];
     usernameWithLake: string;
-    king: string;
+    kingUsername: string;
 }
 
 export interface InitialGameDto {
     hostUsername: string;
+    kingUsername: string;
+    partyNumber: number;
+    questNumber: number;
+    usernameWithLake: string;
+    quests: [{
+        questResult: 'GoodWins' | 'EvilWins' | null;
+    }];
+    questStage: QuestStage;
     players: Player[];
 }
 
@@ -17,22 +25,21 @@ export interface NewQuestInfoDto {
 }
 
 export enum QuestStage {
-    Default = 0,
-    ChooseParty = 1,
-    ApproveParty,
-    VoteQuest,
-    Lake,
-    Assassinate,
-    End
+    Default = 'Default',
+    ChooseParty = 'ChooseParty',
+    ApproveParty = 'ApproveParty',
+    VoteQuest = 'VoteQuest',
+    Lake = 'Lake',
+    Assassinate = 'Assassinate',
+    End = 'End'
 }
 
 export interface Player {
     username: string;
-    isHost: boolean;
-    hasLake?: boolean;
-    isKing?: boolean;
-    isInParty?: boolean;
-    role?: Role;
+    hasLake: boolean;
+    isKing: boolean;
+    isInParty: boolean;
+    role: Role;
 }
 
 export interface CreateGameOptions {

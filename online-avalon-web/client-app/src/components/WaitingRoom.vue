@@ -14,7 +14,7 @@
       :key="player.username"
     >
       {{player.username}}
-      <label class="uk-text-bold">{{player.isHost ? '(Host)' : ''}}</label>
+      <label class="uk-text-bold">{{player.username === hostUsername ? '(Host)' : ''}}</label>
     </div>
     <button
       class="uk-button uk-button-success uk-margin-top"
@@ -59,15 +59,18 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
-import { State, Action } from 'vuex-class';
+import { State, Action, Getter } from 'vuex-class';
 import { CreateGameOptions, Player } from '../types';
 import { StartGame } from '../store/action-types';
+import { IsHost } from '../store/getter-types';
 
 @Component
 export default class WaitingRoom extends Vue {
   @State private players!: Player[];
 
-  @State private isHost!: boolean;
+  @State private hostUsername!: string;
+
+  @Getter(IsHost) private isHost!: boolean;
 
   @Action(StartGame) private dispatchStartGame!: (arg0: CreateGameOptions) => Promise<void>
 

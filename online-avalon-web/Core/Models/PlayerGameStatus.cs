@@ -14,6 +14,6 @@ namespace online_avalon_web.Core.Models
         public long GameId { get; set; }
         public IEnumerable<string> KnownUsernames { get; set; }
         public string UsernameWithLake { get; set; }
-        public string King { get; set; }
+        public string KingUsername { get; set; }
     } 
 }

@@ -25,3 +25,4 @@ export const SetKingUsername = 'setKingUsername';
 export const SetLakedUsername = 'setLakedUsername';
 export const IncrementPartyNumber = 'incrementPartyNumber';
 export const ClearPlayers = 'clearPlayers';
+export const SetUsernameWithLake = 'setUsernameWithLake';

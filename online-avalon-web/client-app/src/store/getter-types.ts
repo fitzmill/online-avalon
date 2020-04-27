@@ -14,3 +14,4 @@ export const PartyMembers = 'partyMembers';
 export const HasLake = 'hasLake';
 export const PlayerWithLake = 'playerWithLake';
 export const IsConnectedToServer = 'isConnectedToServer';
+export const IsHost = 'isHost';

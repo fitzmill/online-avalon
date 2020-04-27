@@ -34,7 +34,13 @@ namespace online_avalon_web.Hubs
         {
             get
             {
-                return (long)Context.Items["GameId"];
+                var item = Context.Items["GameId"];
+                if (item == null)
+                {
+                    return -1;
+                }
+
+                return (long)item;
             }
             set
             {
@@ -68,10 +74,10 @@ namespace online_avalon_web.Hubs
 
         public async Task JoinGameAsHost(string publicGameId)
         {
+            PublicGameId = publicGameId;
             var game = _gameEngine.GetGame(publicGameId);
 
             GameId = game.GameId;
-            PublicGameId = game.PublicId;
             Username = game.HostUsername;
 
             await Groups.AddToGroupAsync(Context.ConnectionId, publicGameId);
@@ -79,20 +85,23 @@ namespace online_avalon_web.Hubs
 
         public async Task<Game> JoinGame(string publicGameId, string username)
         {
+
+            PublicGameId = publicGameId;
+            Username = username;
+
             var game = _gameEngine.AddPlayerToGame(username, publicGameId);
 
-            await Clients.Group(publicGameId).ReceiveNewPlayer(username, $"{username} has joined the game");
+            await Clients.Group(publicGameId).ReceiveNewPlayer(username);
             await Groups.AddToGroupAsync(Context.ConnectionId, publicGameId);
 
             GameId = game.GameId;
-            PublicGameId = game.PublicId;
-            Username = username;
 
             return game;
         }
 
         public async Task LeaveGame()
         {
+            if (GameId < 0) return;
             _gameEngine.RemovePlayerFromGame(GameId, Username, out string newHostUsername);
             await Clients.Group(PublicGameId).ReceiveDisconnectedPlayer(Username, newHostUsername);
         }
@@ -114,7 +123,7 @@ namespace online_avalon_web.Hubs
 
         public async Task RemoveUserFromParty(string username)
         {
-            await Clients.Groups(PublicGameId).AddPlayerToParty(username);
+            await Clients.Groups(PublicGameId).RemovePlayerFromParty(username);
         }
 
         public async Task SubmitParty()

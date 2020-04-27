@@ -17,13 +17,14 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
-import { State, Action } from 'vuex-class';
+import { State, Action, Getter } from 'vuex-class';
 import { GameSummary as GameSummaryType, GameResult } from '@/types';
 import { RestartGame } from '../store/action-types';
+import { IsHost } from '../store/getter-types';
 
 @Component
 export default class GameSummary extends Vue {
-  @State private isHost!: boolean;
+  @Getter(IsHost) private isHost!: boolean;
 
   @State private gameSummary!: GameSummaryType;
 

@@ -76,6 +76,7 @@ namespace online_avalon_web.Engines
                 HostUsername = game.HostUsername,
                 KingUsername = game.KingUsername,
                 NumPlayers = game.NumPlayers,
+                QuestStage = game.QuestStage,
                 PartyNumber = game.PartyNumber,
                 PublicId = game.PublicId,
                 QuestNumber = game.QuestNumber,
@@ -100,6 +101,7 @@ namespace online_avalon_web.Engines
                 {
                     Active = true,
                     GameStatus = GameStatusEnum.PreGame,
+                    QuestStage = QuestStageEnum.Default,
                     NumPlayers = 1,
                     PublicId = publicGameId,
                     HostUsername = hostUsername,
@@ -174,6 +176,7 @@ namespace online_avalon_web.Engines
             game.UsernameWithLake = game.Players[lakeIndex].Username;
             game.Players[lakeIndex].HasHeldLake = true;
             game.QuestNumber = 1;
+            game.QuestStage = QuestStageEnum.ChooseParty;
 
             _gameAccessor.UpdateGame(game);
             _questAccessor.AddQuest(new Quest
@@ -186,7 +189,7 @@ namespace online_avalon_web.Engines
                 .ToDictionary(p => p.Username, p => new PlayerGameStatus
                 {
                     GameId = game.GameId,
-                    King = game.KingUsername,
+                    KingUsername = game.KingUsername,
                     PlayerRole = p.Role,
                     UsernameWithLake = game.UsernameWithLake,
                     KnownUsernames = Utilities.GetKnownUsernamesForPlayer(p, game.Players)
@@ -283,12 +286,15 @@ namespace online_avalon_web.Engines
                 // update party number
                 game.PartyNumber++;
                 // reset players
+                game.QuestStage = QuestStageEnum.ChooseParty;
                 foreach (Player p in players)
                 {
                     p.ApprovalVote = null;
                 }
                 _gameAccessor.UpdateGame(game);
             }
+            game.QuestStage = QuestStageEnum.VoteQuest;
+            _gameAccessor.UpdateGame(game);
             return true;
         }
 
@@ -303,6 +309,8 @@ namespace online_avalon_web.Engines
                 case 4:
                     usernamesToLake = game.Players.Where(p => !p.HasHeldLake).Select(p => p.Username);
                     usernameWithLake = game.UsernameWithLake;
+                    game.QuestStage = QuestStageEnum.Lake;
+                    _gameAccessor.UpdateGame(game);
                     return true;
                 default:
                     usernameWithLake = null;
@@ -339,6 +347,7 @@ namespace online_avalon_web.Engines
                 game.KingUsername = game.Players[newKingIndex].Username;
 
                 game.PartyNumber = 1;
+                game.QuestStage = QuestStageEnum.ChooseParty;
 
                 _gameAccessor.UpdateGame(game);
                 updatedGame = game;
@@ -361,6 +370,8 @@ namespace online_avalon_web.Engines
                     .Where(p => Utilities.GetAlignmentForRole(p.Role) == AlignmentEnum.Good)
                     .Select(p => p.Username);
                 assassin = game.Players.First(p => p.Role == RoleEnum.Assassin).Username;
+                game.QuestStage = QuestStageEnum.Assassinate;
+                _gameAccessor.UpdateGame(game);
                 return true;
             }
             else
@@ -379,7 +390,13 @@ namespace online_avalon_web.Engines
 
             partyUsernames = game.Players.Where(p => p.InParty).Select(p => p.Username);
 
-            return partyUsernames.Count() == numRequiredPartyMembers;
+            if (partyUsernames.Count() == numRequiredPartyMembers)
+            {
+                game.QuestStage = QuestStageEnum.ApproveParty;
+                _gameAccessor.UpdateGame(game);
+                return true;
+            }
+            return false;
         }
 
         public Game EndGame(long gameId, GameResultEnum gameResult)
@@ -387,6 +404,7 @@ namespace online_avalon_web.Engines
             var game = _gameAccessor.GetGame(gameId);
 
             game.GameStatus = GameStatusEnum.Finished;
+            game.QuestStage = QuestStageEnum.Default;
             game.GameResult = gameResult;
 
             _gameAccessor.UpdateGame(game);
@@ -406,6 +424,7 @@ namespace online_avalon_web.Engines
             {
                 Active = true,
                 GameStatus = GameStatusEnum.PreGame,
+                QuestStage = QuestStageEnum.Default,
                 HostUsername = oldGame.HostUsername,
                 NumPlayers = oldGame.NumPlayers,
                 PublicId = oldGame.PublicId,

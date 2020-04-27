@@ -9,7 +9,8 @@
 import { Vue, Component, Watch } from 'vue-property-decorator';
 import UIkit from 'uikit';
 import NavBar from '@/components/NavBar.vue';
-import { State } from 'vuex-class';
+import { State, Mutation } from 'vuex-class';
+import { SetServerMessage, SetServerErrorMessage } from './store/mutation-types';
 
 @Component({
   components: {
@@ -21,14 +22,31 @@ export default class App extends Vue {
 
   @State private serverMessage!: string;
 
+  @Mutation(SetServerMessage) private setServerMessage!: (message: string) => void;
+
+  @Mutation(SetServerErrorMessage) private setServerErrorMessage!: (message: string) => void;
+
   @Watch('serverErrorMessage')
   onServerError() {
-    UIkit.notification(this.serverErrorMessage, { status: 'danger' });
+    if (this.serverErrorMessage && this.serverErrorMessage !== '') {
+      UIkit.notification(this.serverErrorMessage, { status: 'danger' });
+    }
   }
 
   @Watch('serverMessage')
   onServerMessage() {
-    UIkit.notification(this.serverMessage);
+    if (this.serverMessage && this.serverMessage !== '') {
+      UIkit.notification(this.serverMessage);
+    }
+  }
+
+  resetMessages() {
+    this.setServerMessage('');
+    this.setServerErrorMessage('');
+  }
+
+  mounted() {
+    UIkit.util.on(document, 'close', this.resetMessages);
   }
 }
 </script>

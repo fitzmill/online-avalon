@@ -88,11 +88,12 @@ namespace online_avalon_web.Engines
                     break;
                 case RoleEnum.MinionOfMordred:
                     knownPlayers = players.Where(p =>
-                        p.Role == RoleEnum.MinionOfMordred ||
-                        p.Username != player.Username ||
-                        p.Role == RoleEnum.Assassin ||
-                        p.Role == RoleEnum.Mordred ||
-                        p.Role == RoleEnum.Morgana
+                        (
+                            p.Role == RoleEnum.MinionOfMordred ||
+                            p.Role == RoleEnum.Assassin ||
+                            p.Role == RoleEnum.Mordred ||
+                            p.Role == RoleEnum.Morgana
+                        ) && p.Username != player.Username
                     );
                     break;
                 case RoleEnum.Percival:

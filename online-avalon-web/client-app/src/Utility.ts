@@ -38,7 +38,12 @@ export function getPlayerDisplayText(playerRole: Role, knownUsernames: string[])
     return `You are Percival. You know that ${knownUsernames[0]} is Merlin.`;
   }
   if (getAlignmentForPlayer(playerRole) === Alignment.Evil && playerRole !== Role.Oberon) {
-    let str = `You are the ${playerRole}. You know that `;
+    let str = '';
+    if (playerRole === Role.MinionOfMordred) {
+      str = 'You are a Minion of Mordred. You know that ';
+    } else {
+      str = `You are the ${playerRole}. You know that `;
+    }
     for (let i = knownUsernames.length - 1; i > 1; i -= 1) {
       str = str.concat(`${knownUsernames[i]}, `);
     }
@@ -57,4 +62,16 @@ export function formatServerErrorMessage(errorMessage: string) {
   }
 
   return errorMessage;
+}
+
+export function formatUserLeavingMessage(username: string, newHostUsername: string) {
+  if (newHostUsername) {
+    return `${username} has left the game, ${newHostUsername} is now the host`;
+  }
+
+  return `${username} has left the game`;
+}
+
+export function formatUserJoiningMessage(username: string) {
+  return `${username} has joined the game`;
 }

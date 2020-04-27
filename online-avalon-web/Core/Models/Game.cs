@@ -16,6 +16,7 @@ namespace online_avalon_web.Core.Models
         public int NumPlayers { get; set; }
         public bool Active { get; set; }
         public GameStatusEnum GameStatus { get; set; }
+        public QuestStageEnum QuestStage { get; set; }
         public string UsernameWithLake { get; set; }
         public string KingUsername { get; set; }
         public int QuestNumber { get; set; }
