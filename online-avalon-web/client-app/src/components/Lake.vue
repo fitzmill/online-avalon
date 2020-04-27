@@ -49,7 +49,6 @@ import { Vue, Component } from 'vue-property-decorator';
 import {
   State, Getter, Mutation, Action,
 } from 'vuex-class';
-import UIkit from 'uikit';
 import { SetLakedUsername } from '@/store/mutation-types';
 import { HasLake, PlayerWithLake } from '../store/getter-types';
 import { LakePlayer, ContinueQuestAfterLake } from '../store/action-types';
@@ -82,7 +81,7 @@ export default class Lake extends Vue {
     try {
       await this.dispatchLakePlayer(username);
     } catch (error) {
-      UIkit.notification(error.message, { status: 'danger' });
+      // error handled in store code
     } finally {
       this.loading = false;
     }
@@ -93,7 +92,7 @@ export default class Lake extends Vue {
     try {
       await this.dispatchContinueAfterLake();
     } catch (error) {
-      UIkit.notification(error.message, { status: 'danger' });
+      // error handled in store code
     } finally {
       this.loading = false;
     }

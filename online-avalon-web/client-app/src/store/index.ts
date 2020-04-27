@@ -14,7 +14,7 @@ import {
 } from '@/types';
 import { HubConnectionBuilder, HubConnection, HubConnectionState } from '@microsoft/signalr';
 import axios from 'axios';
-import { getPlayerDisplayText, getAlignmentForPlayer } from '@/Utility';
+import { getPlayerDisplayText, getAlignmentForPlayer, formatServerErrorMessage } from '@/Utility';
 import registerSignalREventHandlers from './signalr-utilities';
 import apiConfigs from './api-utilities';
 import {
@@ -53,7 +53,6 @@ import {
   RemovePlayerFromGame,
   SetServerMessage,
   SetServerErrorMessage,
-  SetPlayerAsHost,
   SetUsername,
   SetPublicGameId,
   SetHostUsername,
@@ -238,16 +237,17 @@ export default new Vuex.Store({
       state.players.push({ username, isHost: false });
     },
     [RemovePlayerFromGame]: (state, username) => {
-      state.players.splice(state.players.indexOf(username), 1);
+      const index = state.players.findIndex((p) => p.username === username);
+
+      if (index !== -1) {
+        state.players.splice(index, 1);
+      }
     },
     [SetServerMessage]: (state, message) => {
       state.serverMessage = message;
     },
     [SetServerErrorMessage]: (state, message) => {
       state.serverErrorMessage = message;
-    },
-    [SetPlayerAsHost]: (state) => {
-      state.isHost = true;
     },
     [SetUsername]: (state, username) => {
       state.username = username;
@@ -259,6 +259,9 @@ export default new Vuex.Store({
       const player = state.players.find((p) => p.username === username);
       if (player) {
         player.isHost = true;
+        if (username === state.username) {
+          state.isHost = true;
+        }
       }
     },
     [SetPlayers]: (state, players) => {
@@ -317,38 +320,60 @@ export default new Vuex.Store({
         await axios(Object.assign(apiConfigs.createGame, { data }));
         await dispatch(StartConnection);
         await state.connection.invoke('JoinGameAsHost', state.publicGameId);
-        commit(SetPlayerAsHost);
         commit(AddPlayerToGame, state.username);
         commit(SetHostUsername, state.username);
       } catch (error) {
         if (error.response) {
           commit(SetServerErrorMessage, error.response.data);
+        } else {
+          commit(SetServerErrorMessage, error.message);
         }
         throw error;
       }
     },
-    [StartGame]: async ({ state }, createGameOptions: CreateGameOptions) => {
-      await state.connection.invoke('StartGame', createGameOptions);
+    [StartGame]: async ({ state, commit }, createGameOptions: CreateGameOptions) => {
+      try {
+        await state.connection.invoke('StartGame', createGameOptions);
+      } catch (error) {
+        commit(SetServerErrorMessage, formatServerErrorMessage(error.message));
+        throw error;
+      }
     },
     [JoinGame]: async ({ state, dispatch, commit }) => {
       commit(ClearGameState);
       commit(ClearPlayers);
-      await dispatch(StartConnection);
-      const data = await state.connection.invoke('JoinGame', state.publicGameId, state.username) as InitialGameDto;
-      commit(SetPlayers, data.players.map((p) => p.username));
-      commit(SetPlayerAsHost, data.hostUsername);
+      if (!state.connection || state.connection.state !== HubConnectionState.Connected) {
+        await dispatch(StartConnection);
+      }
+      try {
+        const data = await state.connection.invoke('JoinGame', state.publicGameId, state.username) as InitialGameDto;
+        commit(SetPlayers, data.players.map((p) => ({ username: p.username })));
+        commit(SetHostUsername, data.hostUsername);
+      } catch (error) {
+        commit(SetServerErrorMessage, formatServerErrorMessage(error.message));
+        commit(DisconnectFromServer);
+        throw error;
+      }
     },
     [LeaveGame]: async ({ state }) => {
       await state.connection.invoke('LeaveGame');
     },
-    [AddUserToParty]: async ({ state }, username: string) => {
-      await state.connection.invoke('AddUserToParty', username);
+    [AddUserToParty]: async ({ state, commit }, username: string) => {
+      try {
+        await state.connection.invoke('AddUserToParty', username);
+      } catch (error) {
+        commit(SetServerErrorMessage, formatServerErrorMessage(error.message));
+      }
     },
     [RemoveUserFromParty]: async ({ state }, username: string) => {
       await state.connection.invoke('RemoveUserFromParty', username);
     },
-    [SubmitParty]: async ({ state }) => {
-      await state.connection.invoke('SubmitParty');
+    [SubmitParty]: async ({ state, commit }) => {
+      try {
+        await state.connection.invoke('SubmitParty');
+      } catch (error) {
+        commit(SetServerErrorMessage, formatServerErrorMessage(error.message));
+      }
     },
     [VoteForParty]: async ({ state }, vote: string) => {
       await state.connection.invoke('VoteForParty', vote);
@@ -362,8 +387,12 @@ export default new Vuex.Store({
     [ContinueQuestAfterLake]: async ({ state }) => {
       await state.connection.invoke('ContinueEndQuestAfterLake');
     },
-    [LakePlayer]: async ({ state }, username: string) => {
-      await state.connection.invoke('LakePlayer', username);
+    [LakePlayer]: async ({ state, commit }, username: string) => {
+      try {
+        await state.connection.invoke('LakePlayer', username);
+      } catch (error) {
+        commit(SetServerErrorMessage, error.message);
+      }
     },
     [AssassinatePlayer]: async ({ state }, username: string) => {
       await state.connection.invoke('AssassinatePlayer', username);
@@ -380,7 +409,7 @@ export default new Vuex.Store({
     createPersistedState({
       storage: window.sessionStorage,
       reducer: (state) => Object.assign({}, ...Object.keys(state)
-        .filter((key) => key !== 'connection')
+        .filter((key) => key !== 'connection' && key !== 'isHost')
         .map((key) => ({ [key]: state[key] }))),
     }),
   ],

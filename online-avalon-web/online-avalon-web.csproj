@@ -39,6 +39,8 @@
     <Folder Include="Core\DTOs\" />
     <Folder Include="Hubs\" />
     <Folder Include="Core\Interfaces\Hubs\" />
+    <Folder Include="Workers\" />
+    <Folder Include="Core\Interfaces\Workers\" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="$(SpaRoot)**" />

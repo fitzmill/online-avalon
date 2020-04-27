@@ -60,7 +60,6 @@
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
 import { State, Action } from 'vuex-class';
-import UIkit from 'uikit';
 import { CreateGameOptions, Player } from '../types';
 import { StartGame } from '../store/action-types';
 
@@ -97,7 +96,7 @@ export default class WaitingRoom extends Vue {
     try {
       await this.dispatchStartGame(this.gameOptions);
     } catch (error) {
-      UIkit.notification(error.message, { status: 'danger' });
+      // error handled in store code
     }
   }
 }

@@ -18,8 +18,10 @@ using online_avalon_web.Accessors;
 using online_avalon_web.Core;
 using online_avalon_web.Core.Interfaces.Accessors;
 using online_avalon_web.Core.Interfaces.Engines;
+using online_avalon_web.Core.Interfaces.Workers;
 using online_avalon_web.Engines;
 using online_avalon_web.Hubs;
+using online_avalon_web.Workers;
 
 namespace online_avalon_web
 {
@@ -50,12 +52,19 @@ namespace online_avalon_web
             services.AddTransient<IGameEngine, GameEngine>();
 
             // SignalR
-            services.AddSignalR()
+            services.AddSignalR(hubOptions =>
+            {
+                hubOptions.EnableDetailedErrors = true;
+            })
                 .AddJsonProtocol(options =>
                 {
                     options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+
+            // Workers
+            services.AddSingleton<IGameCleanupQueue, GameCleanupQueue>();
+            services.AddHostedService<GameCleanupWorker>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

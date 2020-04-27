@@ -101,6 +101,9 @@ namespace online_avalon_web.Engines
                         p.Role == RoleEnum.Morgana
                     );
                     break;
+                default:
+                    knownPlayers = new List<Player>();
+                    break;
             }
 
             return knownPlayers.Select(p => p.Username);

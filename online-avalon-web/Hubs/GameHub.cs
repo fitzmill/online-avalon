@@ -26,8 +26,8 @@ namespace online_avalon_web.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            LeaveGame();
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, PublicGameId);
+            await LeaveGame();
         }
 
         private long GameId
@@ -79,10 +79,10 @@ namespace online_avalon_web.Hubs
 
         public async Task<Game> JoinGame(string publicGameId, string username)
         {
-             var game = _gameEngine.AddPlayerToGame(username, publicGameId);
+            var game = _gameEngine.AddPlayerToGame(username, publicGameId);
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, publicGameId);
             await Clients.Group(publicGameId).ReceiveNewPlayer(username, $"{username} has joined the game");
+            await Groups.AddToGroupAsync(Context.ConnectionId, publicGameId);
 
             GameId = game.GameId;
             PublicGameId = game.PublicId;
@@ -91,10 +91,10 @@ namespace online_avalon_web.Hubs
             return game;
         }
 
-        public void LeaveGame()
+        public async Task LeaveGame()
         {
-            _gameEngine.RemovePlayerFromGame(GameId, Username);
-            Clients.Group(PublicGameId).ReceiveDisconnectedPlayer(Username);
+            _gameEngine.RemovePlayerFromGame(GameId, Username, out string newHostUsername);
+            await Clients.Group(PublicGameId).ReceiveDisconnectedPlayer(Username, newHostUsername);
         }
 
         public async Task StartGame(GameOptionsDTO gameOptions)

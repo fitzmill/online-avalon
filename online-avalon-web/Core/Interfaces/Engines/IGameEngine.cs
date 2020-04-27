@@ -31,7 +31,7 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// </summary>
         /// <param name="gameId"></param>
         /// <param name="username"></param>
-        void RemovePlayerFromGame(long gameId, string username);
+        void RemovePlayerFromGame(long gameId, string username, out string newHostUsername);
 
         /// <summary>
         /// Starts a game and returns custom metadata for each player based on their role.

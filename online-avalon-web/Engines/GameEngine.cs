@@ -4,6 +4,7 @@ using System.Linq;
 using online_avalon_web.Core.Enums;
 using online_avalon_web.Core.Interfaces.Accessors;
 using online_avalon_web.Core.Interfaces.Engines;
+using online_avalon_web.Core.Interfaces.Workers;
 using online_avalon_web.Core.Models;
 
 namespace online_avalon_web.Engines
@@ -13,15 +14,18 @@ namespace online_avalon_web.Engines
         private readonly IGameAccessor _gameAccessor;
         private readonly IPlayerAccessor _playerAccessor;
         private readonly IQuestAccessor _questAccessor;
+        private readonly IGameCleanupQueue _gameCleanupQueue;
         public GameEngine(
             IGameAccessor gameAccessor,
             IPlayerAccessor playerAccessor,
-            IQuestAccessor questAccessor
+            IQuestAccessor questAccessor,
+            IGameCleanupQueue gameCleanupQueue
             )
         {
             _gameAccessor = gameAccessor;
             _playerAccessor = playerAccessor;
             _questAccessor = questAccessor;
+            _gameCleanupQueue = gameCleanupQueue;
         }
 
         public Game AddPlayerToGame(string username, string publicGameId)
@@ -115,7 +119,7 @@ namespace online_avalon_web.Engines
             return false;
         }
 
-        public void RemovePlayerFromGame(long gameId, string username)
+        public void RemovePlayerFromGame(long gameId, string username, out string newHostUsername)
         {
             var game = _gameAccessor.GetGameWithPlayers(gameId);
 
@@ -123,6 +127,7 @@ namespace online_avalon_web.Engines
 
             if (player == default(Player))
             {
+                newHostUsername = null;
                 return;
             }
 
@@ -130,6 +135,7 @@ namespace online_avalon_web.Engines
             _playerAccessor.UpdatePlayer(player);
 
             game.NumPlayers--;
+            newHostUsername = null;
 
             if (player.Username == game.HostUsername)
             {
@@ -141,6 +147,7 @@ namespace online_avalon_web.Engines
                 else
                 {
                     game.HostUsername = game.Players.First(p => p.Username != game.HostUsername).Username;
+                    newHostUsername = game.HostUsername;
                 }
             }
             _gameAccessor.UpdateGame(game);
@@ -418,9 +425,7 @@ namespace online_avalon_web.Engines
         {
             var game = _gameAccessor.GetGame(publicGameId);
 
-            game.Active = false;
-
-            _gameAccessor.UpdateGame(game);
+            _gameCleanupQueue.Enqueue(game.GameId);
         }
 
         public Game GetGame(string publicGameId)

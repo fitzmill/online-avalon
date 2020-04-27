@@ -6,15 +6,31 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator';
+import { Vue, Component, Watch } from 'vue-property-decorator';
+import UIkit from 'uikit';
 import NavBar from '@/components/NavBar.vue';
+import { State } from 'vuex-class';
 
 @Component({
   components: {
     NavBar,
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  @State private serverErrorMessage!: string;
+
+  @State private serverMessage!: string;
+
+  @Watch('serverErrorMessage')
+  onServerError() {
+    UIkit.notification(this.serverErrorMessage, { status: 'danger' });
+  }
+
+  @Watch('serverMessage')
+  onServerMessage() {
+    UIkit.notification(this.serverMessage);
+  }
+}
 </script>
 
 <style>

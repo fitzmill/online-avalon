@@ -43,7 +43,6 @@ import {
   Action,
   Mutation,
 } from 'vuex-class';
-import UIkit from 'uikit';
 import { Player, QuestStage } from '@/types';
 import { IsLeader } from '../store/getter-types';
 import { AddUserToParty, RemoveUserFromParty, SubmitParty } from '../store/action-types';
@@ -59,8 +58,6 @@ export default class ChooseParty extends Vue {
   @Getter(IsLeader) private isLeader!: boolean;
 
   @State private players!: Player[];
-
-  @State private serverErrorMessage!: string;
 
   private partyApproved = false;
 
@@ -92,7 +89,7 @@ export default class ChooseParty extends Vue {
         await this.dispatchAddUserToParty(player.username);
       }
     } catch {
-      UIkit.notification(this.serverErrorMessage);
+      // error handled by store
     } finally {
       this.playerLoadingMap[player.username] = false;
     }
@@ -104,7 +101,7 @@ export default class ChooseParty extends Vue {
       await this.dispatchSumbitParty();
       this.setQuestStage(QuestStage.ApproveParty);
     } catch {
-      UIkit.notification(this.serverErrorMessage);
+      // error handled by store
     } finally {
       this.submitLoading = false;
     }

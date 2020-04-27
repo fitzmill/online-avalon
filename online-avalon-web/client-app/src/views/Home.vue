@@ -26,7 +26,8 @@
           placeholder="Create a username" />
         <button
           class="uk-button uk-button-success uk-margin-top"
-          @click="joinGame()">Join Game</button>
+          @click="joinGame()"
+          :disabled="loading">Join Game</button>
       </div>
     </div>
     <transition
@@ -50,7 +51,6 @@
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
 import { Action } from 'vuex-class';
-import UIkit from 'uikit';
 import CreateGame from '@/components/CreateGame.vue';
 import { SetUsername, SetPublicGameId } from '@/store/mutation-types';
 import { JoinGame } from '@/store/action-types';
@@ -63,6 +63,8 @@ import { PlayRoute } from '@/router/route-paths';
 })
 export default class Home extends Vue {
   private creatingGame = false;
+
+  private loading = false;
 
   @Action(JoinGame) dispatchJoinGame!: () => Promise<void>;
 
@@ -106,12 +108,15 @@ export default class Home extends Vue {
       return;
     }
 
+    this.loading = true;
 
     try {
       await this.dispatchJoinGame();
       this.$router.push({ path: `${PlayRoute}/${this.publicGameId}/${this.username}` });
-    } catch (error) {
-      UIkit.notification(error.message, { status: 'danger' });
+    } catch {
+      // error is handled inside of store code
+    } finally {
+      this.loading = false;
     }
   }
 }

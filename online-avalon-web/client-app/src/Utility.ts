@@ -49,3 +49,12 @@ export function getPlayerDisplayText(playerRole: Role, knownUsernames: string[])
   }
   return '';
 }
+
+export function formatServerErrorMessage(errorMessage: string) {
+  const index = errorMessage.indexOf(': ');
+  if (index > -1) {
+    return errorMessage.substr(index + 1);
+  }
+
+  return errorMessage;
+}

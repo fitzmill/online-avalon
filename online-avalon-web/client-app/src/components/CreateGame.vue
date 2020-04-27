@@ -20,8 +20,7 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
-import { State, Action } from 'vuex-class';
-import UIkit from 'uikit';
+import { Action } from 'vuex-class';
 import { SetUsername, SetPublicGameId } from '@/store/mutation-types';
 import { CreateGame as CreateGameAction } from '@/store/action-types';
 import { PlayRoute } from '@/router/route-paths';
@@ -71,7 +70,7 @@ export default class CreateGame extends Vue {
       await this.dispatchCreateGame();
       this.$router.push({ path: `${PlayRoute}/${this.publicGameId}/${this.username}` });
     } catch (error) {
-      UIkit.notification(error.message, { status: 'danger' });
+      // error handled in store code
     }
   }
 }

@@ -30,7 +30,6 @@
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
 import { State, Action } from 'vuex-class';
-import UIkit from 'uikit';
 import { Role } from '../types';
 import { AssassinatePlayer } from '../store/action-types';
 
@@ -56,7 +55,7 @@ export default class Assassinate extends Vue {
     try {
       await this.dispatchAssassinatePlayer(this.assassinatedUsername);
     } catch (error) {
-      UIkit.notification(error.message, { status: 'danger' });
+      // error handled in store code
     } finally {
       this.loading = false;
     }
