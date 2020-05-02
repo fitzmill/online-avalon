@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-// import createPersistedState from 'vuex-persistedstate';
 import {
   NewQuestInfoDto,
   CreateGameOptions,
@@ -33,6 +32,7 @@ import {
   ContinueQuestAfterLake,
   RestartGame,
   DisconnectFromServer,
+  ResetConnection,
 } from './action-types';
 import {
   ClearGameState,
@@ -354,9 +354,9 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    [StartConnection]: async ({ state, commit }) => {
+    [StartConnection]: async ({ state, commit, dispatch }) => {
       commit(BuildConnection);
-      registerSignalREventHandlers(state.connection, commit);
+      registerSignalREventHandlers(state.connection, commit, dispatch);
       await state.connection.start();
     },
     [CreateGame]: async ({ state, commit, dispatch }) => {
@@ -460,14 +460,10 @@ export default new Vuex.Store({
     [DisconnectFromServer]: async ({ state }) => {
       await state.connection.stop();
     },
+    [ResetConnection]: async ({ state }) => {
+      await state.connection.invoke('ResetConnection');
+    }
   },
   modules: {},
-  plugins: [
-    // createPersistedState({
-    //   storage: window.sessionStorage,
-    //   reducer: (state) => Object.assign({}, ...Object.keys(state)
-    //     .filter((key) => key !== 'connection' && key !== 'hostUsername')
-    //     .map((key) => ({ [key]: state[key] }))),
-    // }),
-  ],
+  plugins: [],
 });

@@ -13,10 +13,8 @@ namespace online_avalon_web.Core.Models
         public long PlayerId { get; set; }
         public string Username { get; set; }
         public long GameId { get; set; }
-        [JsonIgnore]
         public RoleEnum Role { get; set; }
         public ApprovalVoteOptionsEnum? ApprovalVote { get; set; }
-        [JsonIgnore]
         public QuestVoteOptionsEnum? QuestVote { get; set; }
         public bool InParty { get; set; }
         public bool HasHeldLake { get; set; }

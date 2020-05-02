@@ -1,4 +1,4 @@
-import { Commit } from 'vuex';
+import { Commit, Dispatch } from 'vuex';
 import {
   QuestStage, NewQuestInfoDto, InitialGameDto, Player,
 } from '@/types';
@@ -25,8 +25,9 @@ import {
   RemovePlayerFromGame,
   SetHostUsername,
 } from './mutation-types';
+import { ResetConnection } from './action-types';
 
-const registerSignalREventHandlers = (connection: signalR.HubConnection, commit: Commit) => {
+const registerSignalREventHandlers = (connection: signalR.HubConnection, commit: Commit, dispatch: Dispatch) => {
   connection.on('ReceiveNewPlayer', (player: Player) => {
     commit(AddPlayerToGame, player);
     commit(SetServerMessage, formatUserJoiningMessage(player.username));
@@ -86,6 +87,7 @@ const registerSignalREventHandlers = (connection: signalR.HubConnection, commit:
   });
   connection.on('ResetGame', () => {
     commit(ClearGameState);
+    dispatch(ResetConnection);
   });
   connection.on('ReceiveDisconnectedPlayer', (username: string, newHostUsername: string) => {
     commit(RemovePlayerFromGame, username);

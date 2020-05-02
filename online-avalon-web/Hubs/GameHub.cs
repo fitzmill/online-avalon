@@ -257,11 +257,18 @@ namespace online_avalon_web.Hubs
 
         public async Task RestartGame()
         {
-            var newGame = _gameEngine.RestartGame(GameId);
-
-            GameId = newGame.GameId;
+            _gameEngine.RestartGame(GameId);
 
             await Clients.Group(PublicGameId).ResetGame();
+        }
+
+        public Task ResetConnection()
+        {
+            var game = _gameEngine.GetGame(PublicGameId);
+
+            GameId = game.GameId;
+
+            return Task.CompletedTask;
         }
     }
 }
