@@ -1,5 +1,7 @@
 import { Commit } from 'vuex';
-import { StartGameDto, QuestStage, NewQuestInfoDto } from '@/types';
+import {
+  QuestStage, NewQuestInfoDto, InitialGameDto, Player,
+} from '@/types';
 import { formatUserLeavingMessage, formatUserJoiningMessage } from '@/Utility';
 import {
   AddPlayerToGame,
@@ -25,13 +27,12 @@ import {
 } from './mutation-types';
 
 const registerSignalREventHandlers = (connection: signalR.HubConnection, commit: Commit) => {
-  connection.on('ReceiveNewPlayer', (username: string) => {
-    commit(AddPlayerToGame, username);
-    commit(SetServerMessage, formatUserJoiningMessage(username));
+  connection.on('ReceiveNewPlayer', (player: Player) => {
+    commit(AddPlayerToGame, player);
+    commit(SetServerMessage, formatUserJoiningMessage(player.username));
   });
-  connection.on('StartGame', (initialGameData: StartGameDto) => {
+  connection.on('StartGame', (initialGameData: InitialGameDto) => {
     commit(SetInitialGameData, initialGameData);
-    commit(SetQuestStage, QuestStage.ChooseParty);
   });
   connection.on('AddPlayerToParty', (username: string) => {
     commit(AddPlayerToParty, username);

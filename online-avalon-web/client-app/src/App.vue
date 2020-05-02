@@ -64,6 +64,13 @@ export default class App extends Vue {
 .uk-button-success {
   background-color: #1a921a;
   color: white;
+  border: 1px solid transparent;
+}
+
+.uk-button-success:disabled {
+  background-color: transparent;
+  color: #999;
+  border-color: #e5e5e5;
 }
 
 .app-button {

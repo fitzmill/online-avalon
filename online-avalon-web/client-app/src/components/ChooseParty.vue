@@ -2,12 +2,12 @@
   <div>
     <PartyNumber />
     <div v-if="isLeader">
-      <h4>Choose your party</h4>
+      <h4>Choose {{requiredNumPartyMembers}} players for your party</h4>
       <div class="uk-child-width-1-2 uk-grid-small" uk-grid>
         <div v-for="player in players" :key="player.username">
           <button
             class="app-button uk-button-default uk-button-small uk-width-1-1 uk-text-truncate"
-            :class="[player.isInParty ? 'in-party' : '']"
+            :class="[player.inParty ? 'in-party' : '']"
             @click="swapPartyStatus(player)"
             :disabled="playerLoadingMap[player.username]">
             {{player.username}}
@@ -17,7 +17,7 @@
       <button
         class="uk-button uk-button-success uk-margin-top"
         @click="submitParty()"
-        :disabled="submitLoading">
+        :disabled="submitLoading || !hasRequiredNumPartyMembers">
         Submit Party
       </button>
     </div>
@@ -26,7 +26,7 @@
       <div class="uk-child-width-1-2 uk-grid-small" uk-grid>
         <div v-for="player in players" :key="player.username">
           <div class="uk-text-truncate"
-            :class="player.isInParty ? 'uk-text-emphasis' : 'uk-text-muted'">
+            :class="player.inParty ? 'uk-text-emphasis' : 'uk-text-muted'">
             {{player.username}}
           </div>
         </div>
@@ -59,11 +59,21 @@ export default class ChooseParty extends Vue {
 
   @State private players!: Player[];
 
+  @State private requiredNumPartyMembers!: number;
+
   private partyApproved = false;
 
   private playerLoadingMap: { [key: string ]: boolean } = {};
 
   private submitLoading = false;
+
+  get hasRequiredNumPartyMembers() {
+    return this.numPlayersInParty === this.requiredNumPartyMembers;
+  }
+
+  get numPlayersInParty() {
+    return this.players.filter((p) => p.inParty).length;
+  }
 
   @Mutation(SetQuestStage) private setQuestStage!: (stage: QuestStage) => void;
 
@@ -75,9 +85,9 @@ export default class ChooseParty extends Vue {
   @Action(SubmitParty) private dispatchSumbitParty!: () => Promise<void>;
 
   private async swapPartyStatus(player: Player) {
-    this.playerLoadingMap[player.username] = true;
+    this.$set(this.playerLoadingMap, player.username, true);
     try {
-      if (player.isInParty) {
+      if (player.inParty) {
         await this.dispatchRemoveUserFromParty(player.username);
       } else {
         await this.dispatchAddUserToParty(player.username);
@@ -85,7 +95,7 @@ export default class ChooseParty extends Vue {
     } catch {
       // error handled by store
     } finally {
-      this.playerLoadingMap[player.username] = false;
+      this.$set(this.playerLoadingMap, player.username, false);
     }
   }
 
@@ -93,7 +103,6 @@ export default class ChooseParty extends Vue {
     this.submitLoading = true;
     try {
       await this.dispatchSumbitParty();
-      this.setQuestStage(QuestStage.ApproveParty);
     } catch {
       // error handled by store
     } finally {

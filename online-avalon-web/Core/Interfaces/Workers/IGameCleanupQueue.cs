@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using online_avalon_web.Core.Models;
 
 namespace online_avalon_web.Core.Interfaces.Workers
@@ -17,5 +18,7 @@ namespace online_avalon_web.Core.Interfaces.Workers
         /// <param name="gameId"></param>
         /// <returns></returns>
         bool TryDequeue(out long gameId);
+
+        void EnqueueRange(IEnumerable<long> gameIds);
     }
 }

@@ -15,5 +15,13 @@ namespace online_avalon_web.Core.Models
         public IEnumerable<string> KnownUsernames { get; set; }
         public string UsernameWithLake { get; set; }
         public string KingUsername { get; set; }
+        public string HostUsername { get; set; }
+        public IEnumerable<Player> Players { get; set; }
+        public int NumPlayers { get; set; }
+        public QuestStageEnum QuestStage { get; set; }
+        public int QuestNumber { get; set; }
+        public int RequiredNumPartyMembers { get; set; }
+        public int PartyNumber { get; set; }
+        public IEnumerable<Quest> Quests { get; set; }
     } 
 }

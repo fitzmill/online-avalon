@@ -35,6 +35,7 @@ import { Player } from '@/types';
 import { Getter, Action } from 'vuex-class';
 import { PartyMembers } from '../store/getter-types';
 import PartyNumber from './PartyNumber.vue';
+import { VoteForParty } from '../store/action-types';
 
 @Component({
   components: {
@@ -48,13 +49,18 @@ export default class ApproveParty extends Vue {
 
   private voted = false;
 
-  @Action private dispatchVoteForParty!: (vote: string) => Promise<void>
+  @Action(VoteForParty) private dispatchVoteForParty!: (vote: string) => Promise<void>
 
   private async voteForParty(vote: string) {
     this.loading = true;
     await this.dispatchVoteForParty(vote);
     this.voted = true;
     this.loading = false;
+  }
+
+  mounted() {
+    this.loading = false;
+    this.voted = false;
   }
 }
 </script>

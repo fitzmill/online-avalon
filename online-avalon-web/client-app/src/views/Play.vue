@@ -23,7 +23,12 @@
             </div>
           </div>
           <div class="uk-card-body">
-            <transition name="play-component-fade" mode="out-in">
+            <transition
+              mode="out-in"
+              v-on:before-enter="beforeEnter"
+              v-on:enter="enter"
+              v-on:leave="leave"
+              v-bind:css="false">
               <component v-bind:is="currentComponent"></component>
             </transition>
           </div>
@@ -53,6 +58,7 @@ import {
   Getter, State, Mutation, Action,
 } from 'vuex-class';
 import { Route } from 'vue-router';
+import Velocity from 'velocity-animate';
 import WaitingRoom from '@/components/WaitingRoom.vue';
 import ChooseParty from '@/components/ChooseParty.vue';
 import PlayerInfo from '@/components/PlayerInfo.vue';
@@ -73,6 +79,7 @@ import {
   IsEndStage,
   PartyLeader,
   IsConnectedToServer,
+  IsConnectingToServer,
 } from '../store/getter-types';
 import { QuestResult, Player } from '../types';
 import { DisconnectFromServer, JoinGame } from '../store/action-types';
@@ -108,6 +115,8 @@ export default class Play extends Vue {
   @Getter(PartyLeader) private partyLeader!: Player;
 
   @Getter(IsConnectedToServer) private isConnectedToServer!: boolean;
+
+  @Getter(IsConnectingToServer) private isConnectingToServer!: boolean;
 
   @State private questResults!: QuestResult[];
 
@@ -161,6 +170,27 @@ export default class Play extends Vue {
     return 'uk-text-danger uk-text-bold';
   }
 
+  private beforeEnter = (el: HTMLElement) => {
+    // eslint-disable-next-line no-param-reassign
+    el.style.opacity = '0';
+  }
+
+  private enter = (el: HTMLElement, done: () => void) => {
+    Velocity(
+      el,
+      { opacity: 1 },
+      { duration: 500, complete: done },
+    );
+  }
+
+  private leave = (el: HTMLElement, done: () => void) => {
+    Velocity(
+      el,
+      { opacity: 0 },
+      { duration: 500, complete: done },
+    );
+  }
+
   @Action(JoinGame) private dispatchJoinGame!: () => Promise<void>;
 
   @Action(DisconnectFromServer) private disconnectFromServer!: () => void;
@@ -172,7 +202,7 @@ export default class Play extends Vue {
   @Mutation(SetPublicGameId) private setPublicGameId!: (id: string) => void;
 
   mounted() {
-    if (!this.isConnectedToServer) {
+    if (!this.isConnectedToServer && !this.isConnectingToServer) {
       this.setUsername(this.$router.currentRoute.params.username);
       this.setPublicGameId(this.$router.currentRoute.params.publicGameId);
       this.dispatchJoinGame().catch(() => {
@@ -197,15 +227,5 @@ export default class Play extends Vue {
   position: absolute;
   top: 80px;
   left: 5px;
-}
-
-.play-component-fade-enter-active,
-.play-component-fade-leave-active {
-  transition: opacity .3s ease;
-}
-
-.play-component-fade-enter,
-.play-component-fade-leave-to {
-  opacity: 0;
 }
 </style>

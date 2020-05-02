@@ -24,5 +24,7 @@ export const SetCurrentQuestResult = 'setCurrentQuestResult';
 export const SetKingUsername = 'setKingUsername';
 export const SetLakedUsername = 'setLakedUsername';
 export const IncrementPartyNumber = 'incrementPartyNumber';
+export const SetPartyNumber = 'setPartyNumber';
 export const ClearPlayers = 'clearPlayers';
 export const SetUsernameWithLake = 'setUsernameWithLake';
+export const SetQuestNumber = 'setQuestNumber';

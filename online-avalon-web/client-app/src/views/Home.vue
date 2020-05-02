@@ -3,7 +3,7 @@
     <div
       id="join-card"
       class="uk-card uk-card-default uk-card-body
-        uk-width-large@m uk-position-center uk-margin-remove"
+       uk-position-center uk-margin-remove"
     >
       <div class="uk-flex uk-flex-column">
         <h2>Welcome!</h2>
@@ -11,27 +11,34 @@
         <button
           class="uk-button uk-button-primary uk-margin-bottom"
           @click="createGame()">Create Game</button>
-        <input
-          v-model="publicGameId"
-          class="uk-input"
-          v-bind:class="{ 'uk-form-danger': errors.publicGameId }"
-          type="text"
-          @focus="$event.target.select()"
-          placeholder="Enter room name" />
-        <input
-          v-model="username"
-          class="uk-input uk-margin-small-top"
-          v-bind:class="{ 'uk-form-danger': errors.username }"
-          type="text"
-          placeholder="Create a username" />
-        <button
-          class="uk-button uk-button-success uk-margin-top"
-          @click="joinGame()"
-          :disabled="loading">Join Game</button>
+        <form v-on:submit.prevent="joinGame">
+          <input
+            v-model="publicGameId"
+            class="uk-input"
+            v-bind:class="{ 'uk-form-danger': errors.publicGameId }"
+            type="text"
+            @focus="$event.target.select()"
+            placeholder="Enter room name" />
+          <input
+            v-model="username"
+            class="uk-input uk-margin-small-top"
+            v-bind:class="{ 'uk-form-danger': errors.username }"
+            type="text"
+            placeholder="Create a username" />
+          <button
+            class="uk-button uk-button-success uk-margin-top"
+            @click="joinGame()"
+            type="submit"
+            :disabled="loading">Join Game</button>
+        </form>
       </div>
     </div>
     <transition
       name="create-game-slide"
+      v-on:before-enter="hideOverflow"
+      v-on:after-enter="showOverflow"
+      v-on:before-leave="hideOverflow"
+      v-on:after-leave="showOverflow"
       >
       <div
         id="create-card"
@@ -118,6 +125,16 @@ export default class Home extends Vue {
     } finally {
       this.loading = false;
     }
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  private hideOverflow() {
+    document.body.classList.add('uk-overflow-hidden');
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  private showOverflow() {
+    document.body.classList.remove('uk-overflow-hidden');
   }
 }
 </script>

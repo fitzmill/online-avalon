@@ -48,7 +48,7 @@ namespace online_avalon_web.Engines
                 case 10:
                     return (6, 4);
                 default:
-                    throw new ArgumentOutOfRangeException($"Argument {nameof(playerCount)} is outside the range of {MinNumberOfPlayers} to {MaxNumberOfPlayers}");
+                    return (0, 0);
             }
         }
 
@@ -112,11 +112,6 @@ namespace online_avalon_web.Engines
 
         public static int GetRequiredQuestVotes(int questNumber, int playerCount)
         {
-            if (playerCount < MinNumberOfPlayers || playerCount > MaxNumberOfPlayers)
-            {
-                throw new ArgumentOutOfRangeException($"Argument {nameof(playerCount)} is outside the range of {MinNumberOfPlayers} to {MaxNumberOfPlayers}");
-            }
-
             if (playerCount == 5)
             {
                 switch (questNumber)
@@ -132,7 +127,7 @@ namespace online_avalon_web.Engines
                     case 5:
                         return 3;
                     default:
-                        throw new ArgumentOutOfRangeException($"Argument {nameof(questNumber)} is not in the range 1-5");
+                        return 0;
                 }
             }
             else if (playerCount == 6)
@@ -150,7 +145,7 @@ namespace online_avalon_web.Engines
                     case 5:
                         return 4;
                     default:
-                        throw new ArgumentOutOfRangeException($"Argument {nameof(questNumber)} is not in the range 1-5");
+                        return 0;
                 }
             }
             else if (playerCount == 7)
@@ -168,7 +163,7 @@ namespace online_avalon_web.Engines
                     case 5:
                         return 4;
                     default:
-                        throw new ArgumentOutOfRangeException($"Argument {nameof(questNumber)} is not in the range 1-5");
+                        return 0;
                 }
             }
             else if (playerCount == 8)
@@ -186,7 +181,7 @@ namespace online_avalon_web.Engines
                     case 5:
                         return 5;
                     default:
-                        throw new ArgumentOutOfRangeException($"Argument {nameof(questNumber)} is not in the range 1-5");
+                        return 0;
                 }
             }
             else if (playerCount == 9)
@@ -204,7 +199,7 @@ namespace online_avalon_web.Engines
                     case 5:
                         return 5;
                     default:
-                        throw new ArgumentOutOfRangeException($"Argument {nameof(questNumber)} is not in the range 1-5");
+                        return 0;
                 }
             }
             else
@@ -222,7 +217,7 @@ namespace online_avalon_web.Engines
                     case 5:
                         return 5;
                     default:
-                        throw new ArgumentOutOfRangeException($"Argument {nameof(questNumber)} is not in the range 1-5");
+                        return 0;
                 }
             }
         }

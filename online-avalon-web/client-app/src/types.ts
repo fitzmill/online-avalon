@@ -1,27 +1,27 @@
-export interface StartGameDto {
-    playerRole: Role;
-    knownUsernames: string[];
-    usernameWithLake: string;
-    kingUsername: string;
-}
-
 export interface InitialGameDto {
     hostUsername: string;
     kingUsername: string;
     partyNumber: number;
     questNumber: number;
+    requiredNumPartyMembers: number;
     usernameWithLake: string;
     quests: [{
         questResult: 'GoodWins' | 'EvilWins' | null;
     }];
+    knownUsernames: string[];
     questStage: QuestStage;
-    players: Player[];
+    players: [{
+        username: string;
+        inParty: boolean;
+    }];
+    playerRole: Role;
 }
 
 export interface NewQuestInfoDto {
     kingUsername: string;
     usernameWithLake: string;
     newQuestNumber: number;
+    requiredNumPartyMembers: number;
 }
 
 export enum QuestStage {
@@ -38,7 +38,7 @@ export interface Player {
     username: string;
     hasLake: boolean;
     isKing: boolean;
-    isInParty: boolean;
+    inParty: boolean;
     role: Role;
 }
 

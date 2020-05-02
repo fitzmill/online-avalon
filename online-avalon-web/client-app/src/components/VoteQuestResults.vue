@@ -1,11 +1,18 @@
 <template>
   <div>
-    <transition-group name="vote-quest-result-list">
-      <div v-for="(result, i) in computedQuestVotes" :key="i+0">
+    <transition-group
+      v-on:beforeEnter="beforeEnter"
+      v-on:enter="enter"
+      v-bind:css="false">
+      <div v-for="(result, i) in computedQuestVotes" :key="i+0"
+        :data-index="i">
         {{result}}
       </div>
     </transition-group>
-    <transition name="vote-quest-result-list">
+    <transition
+      v-on:beforeEnter="beforeEnter"
+      v-on:enter="enter"
+      v-bind:css="false">
       <h4 v-if="didFail === false" key="quest-pass">The quest has succeeded.</h4>
       <h4 v-else-if="didFail" key="quest-fail">The quest has failed.</h4>
     </transition>
@@ -15,6 +22,7 @@
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
 import { State, Mutation, Action } from 'vuex-class';
+import Velocity from 'velocity-animate';
 import { SetCurrentQuestResult } from '../store/mutation-types';
 import { QuestResult } from '../types';
 import { SendEndQuestInfo } from '../store/action-types';
@@ -31,14 +39,38 @@ export default class VoteQuestResults extends Vue {
 
   private readonly listDelay = 750;
 
-  get didFail() {
-    if (this.questResults[this.questNumber - 1] === QuestResult.Unknown) {
-      return null;
+  private didFail: boolean | null = null;
+
+  beforeEnter = (el: HTMLElement) => {
+    // eslint-disable-next-line no-param-reassign
+    el.style.opacity = '0';
+  }
+
+  enter(el: HTMLElement, done: () => void) {
+    const index = el.dataset.index !== undefined
+      ? Number(el.dataset.index) : this.questVotes.length;
+    if (index === this.questVotes.length) {
+      Velocity(
+        el,
+        { opacity: 1 },
+        {
+          delay: this.listDelay * index,
+          duration: 1500,
+          easing: 'ease-out',
+          complete: () => {
+            done();
+            this.setCurrentQuestResult();
+            this.dispatchSendEndQuestInfo();
+          },
+        },
+      );
+      return;
     }
-    if (this.questResults[this.questNumber - 1] === QuestResult.GoodWins) {
-      return false;
-    }
-    return true;
+    Velocity(
+      el,
+      { opacity: 1 },
+      { delay: index * this.listDelay, complete: done },
+    );
   }
 
   @Mutation(SetCurrentQuestResult) private setCurrentQuestResult!: () => void;
@@ -46,30 +78,13 @@ export default class VoteQuestResults extends Vue {
   @Action(SendEndQuestInfo) private dispatchSendEndQuestInfo!: () => Promise<void>;
 
   mounted() {
+    this.computedQuestVotes = [...this.questVotes];
+    this.didFail = this.questVotes.some((v) => v === 'Fail');
+  }
+
+  beforeDestroy() {
+    this.didFail = null;
     this.computedQuestVotes = [];
-
-    this.questVotes.forEach((v, i) => {
-      setTimeout(() => {
-        this.computedQuestVotes.push(v);
-      }, this.listDelay * i);
-    });
-
-    setTimeout(() => {
-      this.setCurrentQuestResult();
-      this.dispatchSendEndQuestInfo();
-    }, this.listDelay * this.questVotes.length);
   }
 }
 </script>
-
-<style>
-.vote-quest-result-list-enter-active,
-.vote-quest-result-list-leave-active {
-  transition: all .5s ease;
-}
-
-.vote-quest-result-list-enter,
-.vote-quest-result-list-leave-to {
-  opacity: 0;
-}
-</style>

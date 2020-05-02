@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using online_avalon_web.Core.DTOs;
@@ -83,7 +84,7 @@ namespace online_avalon_web.Hubs
             await Groups.AddToGroupAsync(Context.ConnectionId, publicGameId);
         }
 
-        public async Task<Game> JoinGame(string publicGameId, string username)
+        public async Task<PlayerGameStatus> JoinGame(string publicGameId, string username)
         {
 
             PublicGameId = publicGameId;
@@ -91,7 +92,7 @@ namespace online_avalon_web.Hubs
 
             var game = _gameEngine.AddPlayerToGame(username, publicGameId);
 
-            await Clients.Group(publicGameId).ReceiveNewPlayer(username);
+            await Clients.Group(publicGameId).ReceiveNewPlayer(game.Players.First((p) => p.Username == username));
             await Groups.AddToGroupAsync(Context.ConnectionId, publicGameId);
 
             GameId = game.GameId;
@@ -119,11 +120,13 @@ namespace online_avalon_web.Hubs
         public async Task AddUserToParty(string username)
         {
             await Clients.Groups(PublicGameId).AddPlayerToParty(username);
+            _playerEngine.AddPlayerToParty(GameId, username);
         }
 
         public async Task RemoveUserFromParty(string username)
         {
             await Clients.Groups(PublicGameId).RemovePlayerFromParty(username);
+            _playerEngine.RemovePlayerFromParty(GameId, username);
         }
 
         public async Task SubmitParty()
@@ -176,13 +179,14 @@ namespace online_avalon_web.Hubs
                 await Clients.User(CustomUserIdProvider.GetUserId(usernameWithLake, PublicGameId)).ReceiveUsernamesToLake(usernamesToLake);
                 await Clients.Group(PublicGameId).MoveToLakeStage(usernameWithLake);
             }
-            else if (_gameEngine.TryMoveToNextQuest(GameId, out Game updatedGame))
+            else if (_gameEngine.TryMoveToNextQuest(GameId, out PlayerGameStatus updatedGame))
             {
                 await Clients.Group(PublicGameId).ReceiveNewQuestInfo(new NewQuestDTO
                 {
                     KingUsername = updatedGame.KingUsername,
                     UsernameWithLake = updatedGame.UsernameWithLake,
-                    NewQuestNumber = updatedGame.QuestNumber
+                    NewQuestNumber = updatedGame.QuestNumber,
+                    RequiredNumPartyMembers = updatedGame.RequiredNumPartyMembers
                 });
             }
             else if (_gameEngine.TryMoveToAssassinationStage(GameId, out string assassin, out IEnumerable<string> usernamesToAssassinate))
@@ -213,13 +217,14 @@ namespace online_avalon_web.Hubs
 
         public async Task ContinueEndQuestAfterLake()
         {
-            if (_gameEngine.TryMoveToNextQuest(GameId, out Game updatedGame))
+            if (_gameEngine.TryMoveToNextQuest(GameId, out PlayerGameStatus updatedGame))
             {
                 await Clients.Group(PublicGameId).ReceiveNewQuestInfo(new NewQuestDTO
                 {
                     KingUsername = updatedGame.KingUsername,
                     UsernameWithLake = updatedGame.UsernameWithLake,
-                    NewQuestNumber = updatedGame.QuestNumber
+                    NewQuestNumber = updatedGame.QuestNumber,
+                    RequiredNumPartyMembers = updatedGame.RequiredNumPartyMembers
                 });
             }
             else if (_gameEngine.TryMoveToAssassinationStage(GameId, out string assassin, out IEnumerable<string> usernamesToAssassinate))

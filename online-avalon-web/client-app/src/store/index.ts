@@ -1,8 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import createPersistedState from 'vuex-persistedstate';
+// import createPersistedState from 'vuex-persistedstate';
 import {
-  StartGameDto,
   NewQuestInfoDto,
   CreateGameOptions,
   InitialGameDto,
@@ -64,6 +63,8 @@ import {
   IncrementPartyNumber,
   ClearPlayers,
   SetUsernameWithLake,
+  SetPartyNumber,
+  SetQuestNumber,
 } from './mutation-types';
 import {
   IsDefaultStage,
@@ -83,6 +84,7 @@ import {
   IsConnectedToServer,
   IsHost,
   PlayerWithLake,
+  IsConnectingToServer,
 } from './getter-types';
 
 Vue.use(Vuex);
@@ -91,6 +93,7 @@ export default new Vuex.Store({
   state: {
     questNumber: 0,
     partyNumber: 0,
+    requiredNumPartyMembers: 0,
     username: '',
     publicGameId: '',
     playerRole: Role.Default,
@@ -133,8 +136,9 @@ export default new Vuex.Store({
     [IsInGame]: (state) => state.connection.state === HubConnectionState.Connected,
     [PlayerDisplayText]: (state) => getPlayerDisplayText(state.playerRole, state.knownUsernames),
     [PlayerAlignment]: (state) => getAlignmentForPlayer(state.playerRole),
-    [PartyMembers]: (state) => state.players.filter((p) => p.isInParty),
+    [PartyMembers]: (state) => state.players.filter((p) => p.inParty),
     [IsConnectedToServer]: (state) => state.connection?.state === HubConnectionState.Connected,
+    [IsConnectingToServer]: (state) => state.connection?.state === HubConnectionState.Connecting,
     [HasLake]: (state) => state.usernameWithLake === state.username,
     [IsHost]: (state) => state.hostUsername === state.username,
     [PlayerWithLake]: (state) => state.players.find((p) => p.hasLake),
@@ -143,6 +147,7 @@ export default new Vuex.Store({
     [ClearGameState]: (state) => {
       state.questNumber = 0;
       state.partyNumber = 0;
+      state.requiredNumPartyMembers = 0;
       state.playerRole = Role.Default;
       state.questStage = QuestStage.Default;
       state.lakedUserAlignment = '';
@@ -160,14 +165,24 @@ export default new Vuex.Store({
         QuestResult.Unknown,
         QuestResult.Unknown,
       ];
+      state.players.forEach((p) => {
+        /* eslint-disable no-param-reassign */
+        p.hasLake = false;
+        p.inParty = false;
+        p.isKing = false;
+        /* eslint-enable no-param-reassign */
+      });
     },
     [ClearPlayers]: (state) => {
       state.players = [];
     },
-    [SetInitialGameData]: (state, initialGameData: StartGameDto) => {
+    [SetInitialGameData]: (state, initialGameData: InitialGameDto) => {
       state.playerRole = initialGameData.playerRole;
       state.knownUsernames = initialGameData.knownUsernames;
-      state.partyNumber = 1;
+      state.requiredNumPartyMembers = initialGameData.requiredNumPartyMembers;
+      state.partyNumber = initialGameData.partyNumber;
+      state.questNumber = initialGameData.questNumber;
+      state.questStage = initialGameData.questStage;
       state.kingUsername = initialGameData.kingUsername;
       state.usernameWithLake = initialGameData.usernameWithLake;
       const king = state.players.find((p) => p.username === initialGameData.kingUsername);
@@ -178,24 +193,37 @@ export default new Vuex.Store({
       if (lake) {
         lake.hasLake = true;
       }
+
+      initialGameData.quests.forEach((q, i) => {
+        switch (q.questResult) {
+          case 'GoodWins':
+            state.questResults.splice(i, 1, QuestResult.GoodWins);
+            break;
+          case 'EvilWins':
+            state.questResults.splice(i, 1, QuestResult.EvilWins);
+            break;
+          default:
+            state.questResults.splice(i, 1, QuestResult.Unknown);
+        }
+      });
     },
     [AddPlayerToParty]: (state, username) => {
       const player = state.players.find((p) => p.username === username);
       if (player) {
-        player.isInParty = true;
+        player.inParty = true;
       }
     },
     [RemovePlayerFromParty]: (state, username) => {
       const player = state.players.find((p) => p.username === username);
       if (player) {
-        player.isInParty = false;
+        player.inParty = false;
       }
     },
     [SetPartyUsernames]: (state, usernames: string[]) => {
       const players = state.players.filter((p) => usernames.indexOf(p.username) !== -1);
       players.forEach((p) => {
         // eslint-disable-next-line no-param-reassign
-        p.isInParty = true;
+        p.inParty = true;
       });
     },
     [SetUserApprovalVotes]: (state, userApprovalVotes: { [key: string]: string }) => {
@@ -214,13 +242,16 @@ export default new Vuex.Store({
       state.players.forEach((p) => {
         /* eslint-disable no-param-reassign */
         p.hasLake = false;
-        p.isInParty = false;
+        p.inParty = false;
         p.isKing = false;
         /* eslint-enable no-param-reassign */
       });
       state.partyNumber = 1;
+      state.requiredNumPartyMembers = newQuestInfo.requiredNumPartyMembers;
       state.usernamesToAssassinate = [];
       state.usernamesToLake = [];
+      state.questVotes = [];
+      state.userApprovalVotes = {};
       state.lakedUserAlignment = '';
       state.lakedUsername = '';
 
@@ -236,18 +267,21 @@ export default new Vuex.Store({
         lake.hasLake = true;
       }
     },
+    [SetQuestNumber]: (state, questNumber: number) => {
+      state.questNumber = questNumber;
+    },
     [SetUsernamesToAssassinate]: (state, usernamesToAssassinate) => {
       state.usernamesToAssassinate = usernamesToAssassinate;
     },
     [SetGameSummary]: (state, gameSummary) => {
       state.gameSummary = gameSummary;
     },
-    [AddPlayerToGame]: (state, username: string) => {
+    [AddPlayerToGame]: (state, player: Player) => {
       state.players.push({
-        username,
-        hasLake: state.usernameWithLake === username,
-        isKing: state.kingUsername === username,
-        isInParty: false,
+        username: player.username,
+        hasLake: state.usernameWithLake === player.username,
+        isKing: state.kingUsername === player.username,
+        inParty: player.inParty,
         role: Role.Default,
       });
     },
@@ -290,6 +324,7 @@ export default new Vuex.Store({
       state.questResults.splice(state.questNumber - 1, 1, result);
     },
     [SetKingUsername]: (state, username: string) => {
+      state.kingUsername = username;
       const oldKing = state.players.find((p) => p.isKing);
       if (oldKing) {
         oldKing.isKing = false;
@@ -304,6 +339,9 @@ export default new Vuex.Store({
     },
     [IncrementPartyNumber]: (state) => {
       state.partyNumber += 1;
+    },
+    [SetPartyNumber]: (state, partyNumber: number) => {
+      state.partyNumber = partyNumber;
     },
     [SetUsernameWithLake]: (state, username: string) => {
       state.usernameWithLake = username;
@@ -332,7 +370,7 @@ export default new Vuex.Store({
         await axios(Object.assign(apiConfigs.createGame, { data }));
         await dispatch(StartConnection);
         await state.connection.invoke('JoinGameAsHost', state.publicGameId);
-        commit(AddPlayerToGame, state.username);
+        commit(AddPlayerToGame, { username: state.username, inParty: false });
         commit(SetHostUsername, state.username);
       } catch (error) {
         if (error.response) {
@@ -362,14 +400,12 @@ export default new Vuex.Store({
         commit(SetPlayers, data.players.map((p) => ({
           username: p.username,
           role: Role.Default,
-          isInParty: p.isInParty,
+          inParty: p.inParty,
           isKing: data.kingUsername === p.username,
           hasLake: data.usernameWithLake === p.username,
         } as Player)));
         commit(SetHostUsername, data.hostUsername);
-        commit(SetKingUsername, data.kingUsername);
-        commit(SetUsernameWithLake, data.usernameWithLake);
-        commit(SetQuestStage, data.questStage);
+        commit(SetInitialGameData, data);
       } catch (error) {
         commit(SetServerErrorMessage, formatServerErrorMessage(error.message));
         await dispatch(DisconnectFromServer);
@@ -427,11 +463,11 @@ export default new Vuex.Store({
   },
   modules: {},
   plugins: [
-    createPersistedState({
-      storage: window.sessionStorage,
-      reducer: (state) => Object.assign({}, ...Object.keys(state)
-        .filter((key) => key !== 'connection' && key !== 'hostUsername')
-        .map((key) => ({ [key]: state[key] }))),
-    }),
+    // createPersistedState({
+    //   storage: window.sessionStorage,
+    //   reducer: (state) => Object.assign({}, ...Object.keys(state)
+    //     .filter((key) => key !== 'connection' && key !== 'hostUsername')
+    //     .map((key) => ({ [key]: state[key] }))),
+    // }),
   ],
 });

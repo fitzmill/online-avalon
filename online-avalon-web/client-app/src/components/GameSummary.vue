@@ -7,8 +7,9 @@
       ({{player.role}}) {{player.username}}
     </div>
     <button
-      v-if="isHost"
       class="uk-button uk-button-primary uk-margin-top"
+      :disabled="!isHost"
+      @click="restartGame"
     >
       Start New Game
     </button>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using online_avalon_web.Core.Enums;
 using online_avalon_web.Core.Interfaces.Accessors;
 using online_avalon_web.Core.Interfaces.Engines;
@@ -28,7 +29,7 @@ namespace online_avalon_web.Engines
             _gameCleanupQueue = gameCleanupQueue;
         }
 
-        public Game AddPlayerToGame(string username, string publicGameId)
+        public PlayerGameStatus AddPlayerToGame(string username, string publicGameId)
         {
             var game = _gameAccessor.GetGameWithPlayers(publicGameId);
 
@@ -59,7 +60,7 @@ namespace online_avalon_web.Engines
                 });
             }
 
-            game.NumPlayers++;
+            _gameAccessor.IncrementPlayerCount(game);
 
             if (string.IsNullOrEmpty(game.HostUsername))
             {
@@ -67,21 +68,22 @@ namespace online_avalon_web.Engines
             }
 
             _gameAccessor.UpdateGame(game);
-            return new Game
+            return new PlayerGameStatus
             {
                 GameId = game.GameId,
-                GameResult = game.GameResult,
-                Active = game.Active,
-                GameStatus = game.GameStatus,
                 HostUsername = game.HostUsername,
                 KingUsername = game.KingUsername,
                 NumPlayers = game.NumPlayers,
                 QuestStage = game.QuestStage,
                 PartyNumber = game.PartyNumber,
-                PublicId = game.PublicId,
                 QuestNumber = game.QuestNumber,
                 Quests = game.Quests,
                 UsernameWithLake = game.UsernameWithLake,
+                RequiredNumPartyMembers = Utilities.GetRequiredQuestVotes(game.QuestNumber, game.NumPlayers),
+                PlayerRole = disconnectedPlayer != default(Player) ? disconnectedPlayer.Role : RoleEnum.Default,
+                KnownUsernames = disconnectedPlayer != default(Player) && disconnectedPlayer.Role != RoleEnum.Default ?
+                    Utilities.GetKnownUsernamesForPlayer(disconnectedPlayer, game.Players) :
+                    new string[0],
                 Players = game.Players.Select(p => new Player
                 {
                     Username = p.Username,
@@ -136,23 +138,13 @@ namespace online_avalon_web.Engines
             player.Disconnected = true;
             _playerAccessor.UpdatePlayer(player);
 
-            game.NumPlayers--;
-            newHostUsername = null;
 
-            if (player.Username == game.HostUsername)
-            {
-                if (game.NumPlayers == 0)
-                {
-                    DeactivateGame(game.PublicId);
-                    game.HostUsername = null;
-                }
-                else
-                {
-                    game.HostUsername = game.Players.First(p => p.Username != game.HostUsername).Username;
-                    newHostUsername = game.HostUsername;
-                }
-            }
-            _gameAccessor.UpdateGame(game);
+            game.HostUsername = game.Players.FirstOrDefault(p => p.Username != game.HostUsername)?.Username;
+            newHostUsername = game.HostUsername;
+
+            _gameAccessor.SetHostUsername(game.GameId, newHostUsername);
+
+            _gameAccessor.DecrementPlayerCount(game);
         }
 
         public Dictionary<string, PlayerGameStatus> StartGame(string publicGameId, IEnumerable<RoleEnum> optionalRoles)
@@ -176,7 +168,9 @@ namespace online_avalon_web.Engines
             game.UsernameWithLake = game.Players[lakeIndex].Username;
             game.Players[lakeIndex].HasHeldLake = true;
             game.QuestNumber = 1;
+            game.PartyNumber = 1;
             game.QuestStage = QuestStageEnum.ChooseParty;
+            game.GameStatus = GameStatusEnum.InGame;
 
             _gameAccessor.UpdateGame(game);
             _questAccessor.AddQuest(new Quest
@@ -192,7 +186,18 @@ namespace online_avalon_web.Engines
                     KingUsername = game.KingUsername,
                     PlayerRole = p.Role,
                     UsernameWithLake = game.UsernameWithLake,
-                    KnownUsernames = Utilities.GetKnownUsernamesForPlayer(p, game.Players)
+                    KnownUsernames = Utilities.GetKnownUsernamesForPlayer(p, game.Players),
+                    RequiredNumPartyMembers = Utilities.GetRequiredQuestVotes(game.QuestNumber, game.NumPlayers),
+                    QuestNumber = game.QuestNumber,
+                    PartyNumber = game.PartyNumber,
+                    HostUsername = game.HostUsername,
+                    NumPlayers = game.NumPlayers,
+                    Quests = game.Quests,
+                    QuestStage = game.QuestStage,
+                    Players = game.Players.Select((p) => new Player
+                    {
+                        Username = p.Username
+                    })
                 });
         }
 
@@ -292,6 +297,7 @@ namespace online_avalon_web.Engines
                     p.ApprovalVote = null;
                 }
                 _gameAccessor.UpdateGame(game);
+                return true;
             }
             game.QuestStage = QuestStageEnum.VoteQuest;
             _gameAccessor.UpdateGame(game);
@@ -319,9 +325,9 @@ namespace online_avalon_web.Engines
             }
         }
 
-        public bool TryMoveToNextQuest(long gameId, out Game updatedGame)
+        public bool TryMoveToNextQuest(long gameId, out PlayerGameStatus updatedGame)
         {
-            var game = _gameAccessor.GetGame(gameId);
+            var game = _gameAccessor.GetGameWithPlayers(gameId);
 
             if (game.QuestNumber < 5
                 && game.Quests.Count(q => q.QuestResult == QuestResultEnum.GoodWins) < 3
@@ -340,6 +346,7 @@ namespace online_avalon_web.Engines
                 {
                     player.ApprovalVote = null;
                     player.QuestVote = null;
+                    player.InParty = false;
                 }
 
                 // update game
@@ -350,7 +357,16 @@ namespace online_avalon_web.Engines
                 game.QuestStage = QuestStageEnum.ChooseParty;
 
                 _gameAccessor.UpdateGame(game);
-                updatedGame = game;
+                updatedGame = new PlayerGameStatus
+                {
+                    PartyNumber = game.PartyNumber,
+                    QuestStage = game.QuestStage,
+                    QuestNumber = game.QuestNumber,
+                    KingUsername = game.KingUsername,
+                    UsernameWithLake = game.UsernameWithLake,
+                    RequiredNumPartyMembers = Utilities.GetRequiredQuestVotes(game.QuestNumber, game.NumPlayers),
+                    Quests = game.Quests
+                };
                 return true;
             }
             else
@@ -418,13 +434,12 @@ namespace online_avalon_web.Engines
 
             oldGame.Active = false;
 
-            _gameAccessor.UpdateGame(oldGame);
-
             var newGame = new Game
             {
                 Active = true,
                 GameStatus = GameStatusEnum.PreGame,
                 QuestStage = QuestStageEnum.Default,
+                PartyNumber = 0,
                 HostUsername = oldGame.HostUsername,
                 NumPlayers = oldGame.NumPlayers,
                 PublicId = oldGame.PublicId,
@@ -435,16 +450,12 @@ namespace online_avalon_web.Engines
                 }).ToList()
             };
 
+
+            _gameAccessor.UpdateGame(oldGame);
+
             _gameAccessor.AddGame(newGame);
 
             return newGame;
-        }
-
-        public void DeactivateGame(string publicGameId)
-        {
-            var game = _gameAccessor.GetGame(publicGameId);
-
-            _gameCleanupQueue.Enqueue(game.GameId);
         }
 
         public Game GetGame(string publicGameId)
@@ -474,6 +485,34 @@ namespace online_avalon_web.Engines
             var game = _gameAccessor.GetGame(gameId);
 
             return game.PartyNumber == 6;
+        }
+
+        public Game GetGame(long gameId)
+        {
+            return _gameAccessor.GetGame(gameId);
+        }
+
+        public IEnumerable<long> GetGameIdsToDeactivate()
+        {
+            try
+            {
+                return _gameAccessor.GetGames()
+                    .Where(g => g.Active && g.NumPlayers == 0)
+                    .Select(g => g.GameId)
+                    .Take
+                    (1000).ToList();
+            }
+            catch (InvalidOperationException ex)
+                when (ex.InnerException?.InnerException?.InnerException is SocketException)
+            {
+                // operation likely timed out
+                return new long[0];
+            }
+        }
+
+        public void MarkGameAsInactive(long gameId)
+        {
+            _gameAccessor.MarkGameAsInactive(gameId);
         }
     }
 }

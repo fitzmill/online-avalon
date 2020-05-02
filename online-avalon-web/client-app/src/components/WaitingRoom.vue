@@ -18,7 +18,9 @@
     </div>
     <button
       class="uk-button uk-button-success uk-margin-top"
-      @click="startGame()">Start Game</button>
+      @click="startGame()"
+      :disabled="!isHost"
+      :uk-tooltip="isHost ? '' : 'Only the host can start the game'">Start Game</button>
 
     <!-- Game Options Modal -->
     <transition name="game-options">
@@ -47,7 +49,9 @@
             Mordred
           </label></li>
           <li><label>
-            <input class="uk-checkbox" type="checkbox" v-model="optionalRoles.oberon">
+            <input class="uk-checkbox" type="checkbox" v-model="optionalRoles.oberon"
+              :disabled="oberonDisabled"
+              :uk-tooltip="oberonDisabled ? 'More players required' : ''">
             Oberon
           </label></li>
         </ul>
@@ -75,6 +79,10 @@ export default class WaitingRoom extends Vue {
   @Action(StartGame) private dispatchStartGame!: (arg0: CreateGameOptions) => Promise<void>
 
   private showOptions = false;
+
+  get oberonDisabled() {
+    return this.players.length <= 5;
+  }
 
   private readonly optionalRoles: { [key: string]: boolean } = {
     morgana: false,

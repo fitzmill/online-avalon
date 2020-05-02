@@ -1,23 +1,25 @@
 <template>
     <div class="uk-flex uk-flex-column">
       <p class="uk-margin-top">Set the room name and enter your username</p>
-      <input
-        v-model="publicGameId"
-        class="uk-input uk-margin-small-bottom"
-        v-bind:class="{ 'uk-form-danger': errors.publicGameId }"
-        type="text"
-        placeholder="Create a room name" />
-      <input
-        v-model="username"
-        class="uk-input uk-margin-bottom"
-        v-bind:class="{ 'uk-form-danger': errors.username }"
-        type="text"
-        placeholder="Create a username" />
+      <form v-on:submit.prevent="createGame">
+        <input
+          v-model="publicGameId"
+          class="uk-input uk-margin-small-bottom"
+          v-bind:class="{ 'uk-form-danger': errors.publicGameId }"
+          type="text"
+          placeholder="Create a room name" />
+        <input
+          v-model="username"
+          class="uk-input uk-margin-bottom"
+          v-bind:class="{ 'uk-form-danger': errors.username }"
+          type="text"
+          placeholder="Create a username" />
 
-      <button
-        class="uk-button uk-button-primary"
-        @click="createGame()"
-        :disabled="loading">Create Game</button>
+        <button
+          class="uk-button uk-button-primary"
+          @click="createGame()"
+          :disabled="loading">Create Game</button>
+      </form>
     </div>
 </template>
 

@@ -41,8 +41,13 @@ export function getPlayerDisplayText(playerRole: Role, knownUsernames: string[])
     let str = '';
     if (playerRole === Role.MinionOfMordred) {
       str = 'You are a Minion of Mordred. You know that ';
+    } else if (playerRole === Role.Assassin) {
+      str = 'You are the Assassin. You know that ';
     } else {
-      str = `You are the ${playerRole}. You know that `;
+      str = `You are ${playerRole}. You know that `;
+    }
+    if (knownUsernames.length === 1) {
+      return str.concat(`${knownUsernames[0]} is evil.`);
     }
     for (let i = knownUsernames.length - 1; i > 1; i -= 1) {
       str = str.concat(`${knownUsernames[i]}, `);

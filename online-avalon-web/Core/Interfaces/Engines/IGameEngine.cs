@@ -24,7 +24,7 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// <exception cref="InvalidOperationException">If the game has already started</exception>
         /// <exception cref="ArgumentException">If there is already someone in the game with the passed in username</exception>
         /// <returns>The game metadata</returns>
-        Game AddPlayerToGame(string username, string publicGameId);
+        PlayerGameStatus AddPlayerToGame(string username, string publicGameId);
 
         /// <summary>
         /// Removes a player from a game
@@ -86,7 +86,7 @@ namespace online_avalon_web.Core.Interfaces.Engines
         /// <param name="gameId"></param>
         /// <param name="updatedGame">The updated game state</param>
         /// <returns>True if the game still has at least one quest to go, false if the game is starting to end</returns>
-        bool TryMoveToNextQuest(long gameId, out Game updatedGame);
+        bool TryMoveToNextQuest(long gameId, out PlayerGameStatus updatedGame);
 
         /// <summary>
         /// Checks if the game is in the assassination stage
@@ -120,16 +120,16 @@ namespace online_avalon_web.Core.Interfaces.Engines
         Game RestartGame(long gameId);
 
         /// <summary>
-        /// Deactivates a currently active game
-        /// </summary>
-        /// <param name="publicGameId"></param>
-        void DeactivateGame(string publicGameId);
-
-        /// <summary>
         /// Gets a game with all details
         /// </summary>
         /// <param name="publicGameId"></param>
         /// <returns></returns>
         Game GetGame(string publicGameId);
+
+        Game GetGame(long gameId);
+
+        void MarkGameAsInactive(long gameId);
+
+        IEnumerable<long> GetGameIdsToDeactivate();
     }
 }

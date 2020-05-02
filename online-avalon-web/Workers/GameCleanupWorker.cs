@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using online_avalon_web.Core.Interfaces.Accessors;
+using online_avalon_web.Core.Interfaces.Engines;
 using online_avalon_web.Core.Interfaces.Workers;
 
 namespace online_avalon_web.Workers
@@ -22,7 +23,7 @@ namespace online_avalon_web.Workers
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _timer = new Timer(CleanupGames, null, TimeSpan.Zero,
-                TimeSpan.FromSeconds(30));
+                TimeSpan.FromSeconds(60));
 
             return Task.CompletedTask;
         }
@@ -35,21 +36,22 @@ namespace online_avalon_web.Workers
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
                     var cleanupQueue = scope.ServiceProvider.GetRequiredService<IGameCleanupQueue>();
-                    var gameAccessor = scope.ServiceProvider.GetRequiredService<IGameAccessor>();
-
+                    var gameEngine = scope.ServiceProvider.GetRequiredService<IGameEngine>();
+                    // empty queue
                     while (cleanupQueue.TryDequeue(out long gameId))
                     {
-                        var game = gameAccessor.GetGame(gameId);
+                        var game = gameEngine.GetGame(gameId);
 
                         // make sure game is still inactive
                         if (game.NumPlayers == 0)
                         {
-                            game.Active = false;
-
-                            gameAccessor.UpdateGame(game);
-
+                            gameEngine.MarkGameAsInactive(game.GameId);
                         }
                     }
+
+                    //refill queue for next pass
+                    var inactiveGameIds = gameEngine.GetGameIdsToDeactivate();
+                    cleanupQueue.EnqueueRange(inactiveGameIds);
                 }
                 // unlock method
                 Interlocked.Exchange(ref _executing, 0);
