@@ -28,13 +28,16 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator';
-import { State, Action } from 'vuex-class';
-import { Role } from '../types';
+import { Vue, Component, Watch } from 'vue-property-decorator';
+import { State, Action, Mutation } from 'vuex-class';
+import { Role, QuestStage } from '../types';
 import { AssassinatePlayer } from '../store/action-types';
+import { MoveToNextQuestStage } from '../store/mutation-types';
 
 @Component
 export default class Assassinate extends Vue {
+  @State private nextQuestStage!: QuestStage;
+
   @State private usernamesToAssassinate!: string[];
 
   @State private playerRole!: Role;
@@ -46,6 +49,13 @@ export default class Assassinate extends Vue {
   private assassinatedUsername = '';
 
   private loading = false;
+
+  @Watch('nextQuestStage')
+  onNextQuestStageChanged() {
+    this.moveToNextQuestStage();
+  }
+
+  @Mutation(MoveToNextQuestStage) private moveToNextQuestStage!: () => void;
 
   @Action(AssassinatePlayer) private dispatchAssassinatePlayer!:
     (username: string) => Promise<void>;
