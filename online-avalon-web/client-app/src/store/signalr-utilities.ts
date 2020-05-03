@@ -27,7 +27,11 @@ import {
 } from './mutation-types';
 import { ResetConnection } from './action-types';
 
-const registerSignalREventHandlers = (connection: signalR.HubConnection, commit: Commit, dispatch: Dispatch) => {
+const registerSignalREventHandlers = (
+  connection: signalR.HubConnection,
+  commit: Commit,
+  dispatch: Dispatch,
+) => {
   connection.on('ReceiveNewPlayer', (player: Player) => {
     commit(AddPlayerToGame, player);
     commit(SetServerMessage, formatUserJoiningMessage(player.username));

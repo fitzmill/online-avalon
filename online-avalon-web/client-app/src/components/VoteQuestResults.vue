@@ -21,14 +21,19 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
-import { State, Mutation, Action } from 'vuex-class';
+import {
+  State, Mutation, Action, Getter,
+} from 'vuex-class';
 import Velocity from 'velocity-animate';
 import { SetCurrentQuestResult } from '../store/mutation-types';
 import { QuestResult } from '../types';
 import { SendEndQuestInfo } from '../store/action-types';
+import { IsLeader } from '../store/getter-types';
 
 @Component
 export default class VoteQuestResults extends Vue {
+  @Getter(IsLeader) private isKing!: boolean;
+
   @State private questVotes!: string[];
 
   private computedQuestVotes: string[] = [];
@@ -60,7 +65,9 @@ export default class VoteQuestResults extends Vue {
           complete: () => {
             done();
             this.setCurrentQuestResult();
-            this.dispatchSendEndQuestInfo();
+            if (this.isKing) {
+              this.dispatchSendEndQuestInfo();
+            }
           },
         },
       );

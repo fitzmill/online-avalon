@@ -320,7 +320,6 @@ export default new Vuex.Store({
       } else {
         result = QuestResult.GoodWins;
       }
-      console.log(result);
       state.questResults.splice(state.questNumber - 1, 1, result);
     },
     [SetKingUsername]: (state, username: string) => {
@@ -462,7 +461,7 @@ export default new Vuex.Store({
     },
     [ResetConnection]: async ({ state }) => {
       await state.connection.invoke('ResetConnection');
-    }
+    },
   },
   modules: {},
   plugins: [],
