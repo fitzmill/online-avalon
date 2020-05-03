@@ -65,6 +65,8 @@ import {
   SetUsernameWithLake,
   SetPartyNumber,
   SetQuestNumber,
+  SetNextQuestStage,
+  MoveToNextQuestStage,
 } from './mutation-types';
 import {
   IsDefaultStage,
@@ -105,6 +107,7 @@ export default new Vuex.Store({
     usernameWithLake: '',
     kingUsername: '',
     questStage: QuestStage.Default,
+    nextQuestStage: QuestStage.Default,
     questVotes: [] as string[],
     usernamesToLake: [] as string[],
     usernamesToAssassinate: [] as string[],
@@ -119,6 +122,7 @@ export default new Vuex.Store({
     players: [] as Player[],
     userApprovalVotes: {} as { [key: string]: string },
     gameSummary: {} as GameSummary,
+    newQuestInfo: {} as NewQuestInfoDto,
     connection: new HubConnectionBuilder()
       .withUrl('/hubs/game')
       .build() as HubConnection,
@@ -150,6 +154,7 @@ export default new Vuex.Store({
       state.requiredNumPartyMembers = 0;
       state.playerRole = Role.Default;
       state.questStage = QuestStage.Default;
+      state.nextQuestStage = QuestStage.Default;
       state.lakedUserAlignment = '';
       state.lakedUsername = '';
       state.knownUsernames = [];
@@ -158,6 +163,7 @@ export default new Vuex.Store({
       state.usernamesToAssassinate = [];
       state.userApprovalVotes = {};
       state.gameSummary = {};
+      state.newQuestInfo = {} as NewQuestInfoDto;
       state.questResults = [
         QuestResult.Unknown,
         QuestResult.Unknown,
@@ -239,33 +245,7 @@ export default new Vuex.Store({
       state.lakedUserAlignment = alignment;
     },
     [SetNewQuestInfo]: (state, newQuestInfo: NewQuestInfoDto) => {
-      state.players.forEach((p) => {
-        /* eslint-disable no-param-reassign */
-        p.hasLake = false;
-        p.inParty = false;
-        p.isKing = false;
-        /* eslint-enable no-param-reassign */
-      });
-      state.partyNumber = 1;
-      state.requiredNumPartyMembers = newQuestInfo.requiredNumPartyMembers;
-      state.usernamesToAssassinate = [];
-      state.usernamesToLake = [];
-      state.questVotes = [];
-      state.userApprovalVotes = {};
-      state.lakedUserAlignment = '';
-      state.lakedUsername = '';
-
-      state.questNumber = newQuestInfo.newQuestNumber;
-      state.kingUsername = newQuestInfo.kingUsername;
-      state.usernameWithLake = newQuestInfo.usernameWithLake;
-      const king = state.players.find((p) => p.username === newQuestInfo.kingUsername);
-      if (king) {
-        king.isKing = true;
-      }
-      const lake = state.players.find((p) => p.username === newQuestInfo.usernameWithLake);
-      if (lake) {
-        lake.hasLake = true;
-      }
+      state.newQuestInfo = newQuestInfo;
     },
     [SetQuestNumber]: (state, questNumber: number) => {
       state.questNumber = questNumber;
@@ -312,6 +292,45 @@ export default new Vuex.Store({
     },
     [SetQuestStage]: (state, stage: QuestStage) => {
       state.questStage = stage;
+    },
+    [SetNextQuestStage]: (state, stage: QuestStage) => {
+      state.nextQuestStage = stage;
+    },
+    [MoveToNextQuestStage]: (state) => {
+      if (state.nextQuestStage === QuestStage.ChooseParty && (
+        state.questStage !== QuestStage.ApproveParty
+          && state.questStage !== QuestStage.Default
+      )) {
+        state.players.forEach((p) => {
+          /* eslint-disable no-param-reassign */
+          p.hasLake = false;
+          p.inParty = false;
+          p.isKing = false;
+          /* eslint-enable no-param-reassign */
+        });
+        state.partyNumber = 1;
+        state.requiredNumPartyMembers = state.newQuestInfo.requiredNumPartyMembers;
+        state.usernamesToAssassinate = [];
+        state.usernamesToLake = [];
+        state.questVotes = [];
+        state.userApprovalVotes = {};
+        state.lakedUserAlignment = '';
+        state.lakedUsername = '';
+
+        state.questNumber = state.newQuestInfo.newQuestNumber;
+        state.kingUsername = state.newQuestInfo.kingUsername;
+        state.usernameWithLake = state.newQuestInfo.usernameWithLake;
+        const king = state.players.find((p) => p.username === state.newQuestInfo.kingUsername);
+        if (king) {
+          king.isKing = true;
+        }
+        const lake = state.players.find((p) => p.username === state.newQuestInfo.usernameWithLake);
+        if (lake) {
+          lake.hasLake = true;
+        }
+      }
+      state.questStage = state.nextQuestStage;
+      state.nextQuestStage = QuestStage.Default;
     },
     [SetCurrentQuestResult]: (state) => {
       let result = QuestResult.Unknown;

@@ -45,14 +45,14 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator';
+import { Vue, Component, Watch } from 'vue-property-decorator';
 import {
   State, Getter, Mutation, Action,
 } from 'vuex-class';
-import { SetLakedUsername } from '@/store/mutation-types';
+import { SetLakedUsername, MoveToNextQuestStage } from '@/store/mutation-types';
 import { HasLake, PlayerWithLake } from '../store/getter-types';
 import { LakePlayer, ContinueQuestAfterLake } from '../store/action-types';
-import { Alignment, Player } from '../types';
+import { Alignment, Player, QuestStage } from '../types';
 
 @Component
 export default class Lake extends Vue {
@@ -66,9 +66,18 @@ export default class Lake extends Vue {
 
   @State private lakedUserAlignment!: Alignment;
 
+  @State private nextQuestStage!: QuestStage;
+
   private loading = false;
 
+  @Watch('nextQuestStage')
+  onNextQuestStageChange() {
+    this.moveToNextStage();
+  }
+
   @Mutation(SetLakedUsername) private setLakedUsername!: (username: string) => void;
+
+  @Mutation(MoveToNextQuestStage) private moveToNextStage!: () => void;
 
   @Action(LakePlayer) private dispatchLakePlayer!: (username: string) => Promise<void>;
 

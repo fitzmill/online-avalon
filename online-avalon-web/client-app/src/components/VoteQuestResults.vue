@@ -25,7 +25,7 @@ import {
   State, Mutation, Action, Getter,
 } from 'vuex-class';
 import Velocity from 'velocity-animate';
-import { SetCurrentQuestResult } from '../store/mutation-types';
+import { SetCurrentQuestResult, MoveToNextQuestStage } from '../store/mutation-types';
 import { QuestResult } from '../types';
 import { SendEndQuestInfo } from '../store/action-types';
 import { IsLeader } from '../store/getter-types';
@@ -65,9 +65,10 @@ export default class VoteQuestResults extends Vue {
           complete: () => {
             done();
             this.setCurrentQuestResult();
-            if (this.isKing) {
-              this.dispatchSendEndQuestInfo();
-            }
+            // if (this.isKing) {
+            //   this.dispatchSendEndQuestInfo();
+            // }
+            this.nextQuestStage();
           },
         },
       );
@@ -81,6 +82,8 @@ export default class VoteQuestResults extends Vue {
   }
 
   @Mutation(SetCurrentQuestResult) private setCurrentQuestResult!: () => void;
+
+  @Mutation(MoveToNextQuestStage) private nextQuestStage!: () => void;
 
   @Action(SendEndQuestInfo) private dispatchSendEndQuestInfo!: () => Promise<void>;
 

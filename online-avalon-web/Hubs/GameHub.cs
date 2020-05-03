@@ -165,6 +165,7 @@ namespace online_avalon_web.Hubs
             if (_gameEngine.TryCompleteQuest(GameId, out List<QuestVoteOptionsEnum> questVotes))
             {
                 await Clients.Group(PublicGameId).ReceiveQuestVotes(questVotes);
+                await SendEndQuestInfo();
             }
         }
 

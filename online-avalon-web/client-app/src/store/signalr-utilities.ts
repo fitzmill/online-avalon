@@ -24,6 +24,7 @@ import {
   ClearGameState,
   RemovePlayerFromGame,
   SetHostUsername,
+  SetNextQuestStage,
 } from './mutation-types';
 import { ResetConnection } from './action-types';
 
@@ -64,7 +65,7 @@ const registerSignalREventHandlers = (
     commit(SetCurrentQuestResult);
   });
   connection.on('MoveToLakeStage', () => {
-    commit(SetQuestStage, QuestStage.Lake);
+    commit(SetNextQuestStage, QuestStage.Lake);
   });
   connection.on('ReceiveUsernamesToLake', (usernamesToLake: string[]) => {
     commit(SetUsernamesToLake, usernamesToLake);
@@ -74,17 +75,17 @@ const registerSignalREventHandlers = (
   });
   connection.on('ReceiveNewQuestInfo', (newQuestInfo: NewQuestInfoDto) => {
     commit(SetNewQuestInfo, newQuestInfo);
-    commit(SetQuestStage, QuestStage.ChooseParty);
+    commit(SetNextQuestStage, QuestStage.ChooseParty);
   });
   connection.on('MoveToAssassinationStage', () => {
-    commit(SetQuestStage, QuestStage.Assassinate);
+    commit(SetNextQuestStage, QuestStage.Assassinate);
   });
   connection.on('ReceiveUsernamesToAssassinate', (usernamesToAssassinate: string[]) => {
     commit(SetUsernamesToAssassinate, usernamesToAssassinate);
   });
   connection.on('EndGameAndReceiveSummary', (summary) => {
     commit(SetGameSummary, summary);
-    commit(SetQuestStage, QuestStage.End);
+    commit(SetNextQuestStage, QuestStage.End);
   });
   connection.on('ReceiveLakeAlignment', (lakedUserAlignment: string) => {
     commit(SetLakedUserAlignment, lakedUserAlignment);

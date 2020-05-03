@@ -19,6 +19,7 @@ dotnet publish ./online-avalon-web/online-avalon-web.csproj --configuration Rele
 echo "Removing old files on server"
 ssh "$1"@65.52.199.113 "sudo systemctl stop kestrel-avalon.service"
 ssh "$1"@65.52.199.113 "sudo rm -rf /var/www/avalon/*"
+ssh "$1"@65.52.199.113 "rm -rf ./avalon-deployment-temp"
 ssh "$1"@65.52.199.113 "mkdir ./avalon-deployment-temp"
 echo "Pushing new files"
 scp -pr ./online-avalon-web/bin/Release/netcoreapp3.1/publish/* "$1"@65.52.199.113:avalon-deployment-temp
