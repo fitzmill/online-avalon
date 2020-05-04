@@ -24,7 +24,7 @@
       </button></div>
     </div>
     <div v-else class="uk-margin-top">
-      Your vote has been submitted.
+      Your vote has been submitted. Waiting on other players...
     </div>
   </div>
 </template>

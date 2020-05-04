@@ -17,11 +17,11 @@
         </div>
       </div>
       <div v-else>
-        Your decision has been recorded, waiting on the rest of the party...
+        Your decision has been recorded, waiting on the rest of the party to decide...
       </div>
     </div>
     <div v-else>
-      Waiting for party members...
+      Waiting for the party members to decide...
     </div>
   </div>
 </template>

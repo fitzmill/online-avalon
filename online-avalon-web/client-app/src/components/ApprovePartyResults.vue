@@ -17,8 +17,8 @@
       v-on:before-enter="beforeEnter"
       v-on:enter="enter"
       v-bind:css="false">
-      <h4 v-if="didPartyFail" key="fail">Vote has failed.</h4>
-      <h4 v-else-if="didPartyFail === false" key="pass">Vote has passed.</h4>
+      <h4 v-if="didPartyFail" key="fail">The vote failed.</h4>
+      <h4 v-else-if="didPartyFail === false" key="pass">The vote passed.</h4>
     </transition>
   </div>
 </template>
