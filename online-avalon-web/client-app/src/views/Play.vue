@@ -14,10 +14,20 @@
         </div>
         <div class="uk-card uk-card-default uk-width-xlarge@s uk-margin-small-top">
           <div class="uk-card-header">
-            <button class="uk-button uk-button-primary uk-button-small"
-              uk-toggle="target: #player-info-modal">
-              Player Info
-            </button>
+            <div class="uk-child-width-auto uk-flex-center" uk-grid>
+              <div>
+                <button class="uk-button uk-button-primary uk-button-small"
+                  uk-toggle="target: #player-info-modal">
+                  Player Info
+                </button>
+              </div>
+              <div v-if="isHost">
+                <button class="uk-button uk-button-default uk-button-small"
+                  uk-toggle="target: #game-options-modal">
+                  Game Options
+                </button>
+              </div>
+            </div>
             <div v-if="partyLeader" class="uk-margin-small-top">
               {{partyLeader.username}} is the King
             </div>
@@ -38,17 +48,31 @@
 
     <!-- Player Info Modal -->
     <div id="player-info-modal" class="uk-flex-top" uk-modal>
-    <div class="uk-modal-dialog uk-modal-body uk-margin-auto-vertical">
-      <button class="uk-modal-close-default" type="button" uk-close></button>
+      <div class="uk-modal-dialog uk-modal-body uk-margin-auto-vertical">
+        <button class="uk-modal-close-default" type="button" uk-close></button>
 
-      <PlayerInfo />
+        <PlayerInfo />
 
-      <button class="uk-button uk-button-primary uk-button-small uk-align-center"
-        uk-toggle="target: #player-info-modal">
-        Close
-      </button>
+        <button class="uk-button uk-button-primary uk-button-small uk-align-center"
+          uk-toggle="target: #player-info-modal">
+          Close
+        </button>
+      </div>
     </div>
-</div>
+
+    <!-- Game Options Modal -->
+    <div id="game-options-modal" class="uk-flex-top" uk-modal v-if="isHost">
+      <div class="uk-modal-dialog uk-modal-body uk-margin-auto-vertical uk-width-medium">
+        <button class="uk-modal-close-default" type="button" uk-close></button>
+
+        <MidGameOptions />
+
+        <button class="uk-button uk-button-primary uk-button-small uk-align-center"
+          uk-toggle="target: #game-options-modal">
+          Close
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -69,6 +93,7 @@ import VoteQuestResults from '@/components/VoteQuestResults.vue';
 import Lake from '@/components/Lake.vue';
 import Assassinate from '@/components/Assassinate.vue';
 import GameSummary from '@/components/GameSummary.vue';
+import MidGameOptions from '@/components/MidGameOptions.vue';
 import {
   IsDefaultStage,
   IsChoosePartyStage,
@@ -80,6 +105,7 @@ import {
   PartyLeader,
   IsConnectedToServer,
   IsConnectingToServer,
+  IsHost,
 } from '../store/getter-types';
 import { QuestResult, Player } from '../types';
 import { DisconnectFromServer, JoinGame } from '../store/action-types';
@@ -95,6 +121,7 @@ import { HomeRoute } from '../router/route-paths';
     ApprovePartyResults,
     VoteQuest,
     VoteQuestResults,
+    MidGameOptions,
   },
 })
 export default class Play extends Vue {
@@ -117,6 +144,8 @@ export default class Play extends Vue {
   @Getter(IsConnectedToServer) private isConnectedToServer!: boolean;
 
   @Getter(IsConnectingToServer) private isConnectingToServer!: boolean;
+
+  @Getter(IsHost) private isHost!: boolean;
 
   @State private questResults!: QuestResult[];
 

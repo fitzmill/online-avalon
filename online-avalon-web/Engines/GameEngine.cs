@@ -417,7 +417,7 @@ namespace online_avalon_web.Engines
 
         public Game EndGame(long gameId, GameResultEnum gameResult)
         {
-            var game = _gameAccessor.GetGame(gameId);
+            var game = _gameAccessor.GetGameWithPlayers(gameId);
 
             game.GameStatus = GameStatusEnum.Finished;
             game.QuestStage = QuestStageEnum.Default;

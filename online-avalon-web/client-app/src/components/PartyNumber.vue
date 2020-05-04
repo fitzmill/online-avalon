@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>Vote Track</div>
-    <div class="uk-grid-divider uk-grid-medium uk-child-width-auto uk-flex-center" uk-grid>
+    <div class="uk-grid-divider uk-grid-small uk-child-width-auto uk-flex-center" uk-grid>
       <div v-for="i in partyNumberList" :key="i"
         :class="getClassesForPartyNumber(i+1)">
         {{i+1}}

@@ -35,7 +35,7 @@
         ></button>
         <label class="uk-text-bold uk-margin-bottom">Game options</label>
         <label>Optional Roles</label>
-        <ul class="uk-list uk-margin-large-left uk-margin-small-top uk-text-left">
+        <ul class="uk-list uk-margin-small-top uk-text-center">
           <li><label>
             <input class="uk-checkbox" type="checkbox" v-model="optionalRoles.percival">
             Percival
