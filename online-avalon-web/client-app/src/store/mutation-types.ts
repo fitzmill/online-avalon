@@ -30,3 +30,4 @@ export const SetPartyNumber = 'setPartyNumber';
 export const ClearPlayers = 'clearPlayers';
 export const SetUsernameWithLake = 'setUsernameWithLake';
 export const SetQuestNumber = 'setQuestNumber';
+export const SetTheme = 'setTheme';

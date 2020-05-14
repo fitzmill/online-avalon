@@ -83,3 +83,5 @@ export enum GameResult {
     GoodWins = 'GoodWins',
     EvilWins = 'EvilWins'
 }
+
+export type ThemeOption = 'dark' | 'light';

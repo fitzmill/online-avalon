@@ -1,0 +1,33 @@
+body {
+  background-color: rgb(44, 44, 44);
+}
+
+nav.uk-navbar-container {
+  background: rgb(38, 38, 38) !important;
+}
+
+.uk-logo {
+  color: white;
+}
+
+span, h1, h2, h3, h4, h5, h6, label, .uk-form-label {
+  color: white;
+}
+
+.uk-card-default {
+  color: white;
+  background: rgb(38, 38, 38);
+}
+
+.uk-button-default {
+  color: white;
+  border-color: white;
+}
+
+.uk-button:hover {
+  color: rgb(200, 200, 200);
+}
+
+.uk-modal-dialog {
+  background: rgb(38, 38, 38);
+}

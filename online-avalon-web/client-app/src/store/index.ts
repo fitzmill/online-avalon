@@ -9,6 +9,7 @@ import {
   QuestResult,
   Role,
   GameSummary,
+  ThemeOption,
 } from '@/types';
 import { HubConnectionBuilder, HubConnection, HubConnectionState } from '@microsoft/signalr';
 import axios from 'axios';
@@ -67,6 +68,7 @@ import {
   SetQuestNumber,
   SetNextQuestStage,
   MoveToNextQuestStage,
+  SetTheme,
 } from './mutation-types';
 import {
   IsDefaultStage,
@@ -93,6 +95,7 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    theme: 'light' as ThemeOption,
     questNumber: 0,
     partyNumber: 0,
     requiredNumPartyMembers: 0,
@@ -148,6 +151,10 @@ export default new Vuex.Store({
     [PlayerWithLake]: (state) => state.players.find((p) => p.hasLake),
   },
   mutations: {
+    [SetTheme]: (state, newValue: ThemeOption) => {
+      state.theme = newValue;
+      window.localStorage.setItem('theme', newValue);
+    },
     [ClearGameState]: (state) => {
       state.questNumber = 0;
       state.partyNumber = 0;

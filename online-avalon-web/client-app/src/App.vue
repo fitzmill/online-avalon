@@ -10,7 +10,8 @@ import { Vue, Component, Watch } from 'vue-property-decorator';
 import UIkit from 'uikit';
 import NavBar from '@/components/NavBar.vue';
 import { State, Mutation } from 'vuex-class';
-import { SetServerMessage, SetServerErrorMessage } from './store/mutation-types';
+import { SetServerMessage, SetServerErrorMessage, SetTheme } from './store/mutation-types';
+import { ThemeOption } from './types';
 
 @Component({
   components: {
@@ -22,9 +23,13 @@ export default class App extends Vue {
 
   @State private serverMessage!: string;
 
+  @State private theme!: ThemeOption;
+
   @Mutation(SetServerMessage) private setServerMessage!: (message: string) => void;
 
   @Mutation(SetServerErrorMessage) private setServerErrorMessage!: (message: string) => void;
+
+  @Mutation(SetTheme) private setTheme!: (theme: ThemeOption) => void;
 
   @Watch('serverErrorMessage')
   onServerError() {
@@ -40,6 +45,23 @@ export default class App extends Vue {
     }
   }
 
+  @Watch('theme')
+  onThemeChange() {
+    if (this.theme === 'light') {
+      const link = document.getElementById('dark-mode-css');
+      if (link) {
+        document.head.removeChild(link);
+      }
+    } else if (this.theme === 'dark') {
+      const link = document.createElement('link');
+      link.id = 'dark-mode-css';
+      link.type = 'text/css';
+      link.rel = 'stylesheet';
+      link.href = `${process.env.BASE_URL}dark-mode.css`;
+      document.head.appendChild(link);
+    }
+  }
+
   resetMessages() {
     this.setServerMessage('');
     this.setServerErrorMessage('');
@@ -47,6 +69,10 @@ export default class App extends Vue {
 
   mounted() {
     UIkit.util.on(document, 'close', this.resetMessages);
+    const cachedTheme = window.localStorage.getItem('theme') as ThemeOption;
+    if (cachedTheme) {
+      this.setTheme(cachedTheme);
+    }
   }
 }
 </script>
