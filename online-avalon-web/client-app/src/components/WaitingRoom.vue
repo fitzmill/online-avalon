@@ -1,7 +1,9 @@
 <template>
   <div>
     <h3>Waiting Room</h3>
-    <p>Waiting for the host to start the game</p>
+    <p>
+      {{headerText}}
+    </p>
     <button
       class="uk-button uk-button-primary uk-button-small uk-margin-small-bottom"
       :uk-tooltip="isHost ? '' : 'Only the host can set options'"
@@ -82,6 +84,14 @@ export default class WaitingRoom extends Vue {
 
   get oberonDisabled() {
     return this.players.length <= 5;
+  }
+
+  get headerText() {
+    if (this.players.length < 5 || this.players.length > 10) {
+      return 'You need 5-10 players to start the game';
+    }
+
+    return 'Waiting for the host to start the game';
   }
 
   private readonly optionalRoles: { [key: string]: boolean } = {

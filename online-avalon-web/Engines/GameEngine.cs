@@ -420,7 +420,7 @@ namespace online_avalon_web.Engines
             var game = _gameAccessor.GetGameWithPlayers(gameId);
 
             game.GameStatus = GameStatusEnum.Finished;
-            game.QuestStage = QuestStageEnum.Default;
+            game.QuestStage = QuestStageEnum.End;
             game.GameResult = gameResult;
 
             _gameAccessor.UpdateGame(game);

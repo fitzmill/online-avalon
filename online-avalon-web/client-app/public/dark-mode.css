@@ -2,6 +2,14 @@ body {
   background-color: rgb(44, 44, 44);
 }
 
+html {
+  color: white;
+}
+
+#app {
+  color: white;
+}
+
 nav.uk-navbar-container {
   background: rgb(38, 38, 38) !important;
 }
@@ -10,8 +18,15 @@ nav.uk-navbar-container {
   color: white;
 }
 
-span, h1, h2, h3, h4, h5, h6, label, .uk-form-label {
+span, h1, h2, h3, h4, h5, h6, label, p,
+.uk-form-label,
+.uk-accordion-title,
+.uk-accordion-title::before {
   color: white;
+}
+
+.uk-text-emphasis {
+  color: white!important;
 }
 
 .uk-card-default {
@@ -25,6 +40,10 @@ span, h1, h2, h3, h4, h5, h6, label, .uk-form-label {
 }
 
 .uk-button:hover {
+  color: rgb(200, 200, 200);
+}
+
+.uk-button-default:hover {
   color: rgb(200, 200, 200);
 }
 

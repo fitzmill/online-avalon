@@ -1,10 +1,15 @@
 <template>
   <div>
-    <h2>{{resultText}}</h2>
-    <h4>Game Summary</h4>
-    <div v-for="player in gameSummary.players" :key="player.username"
-      class="uk-text-truncate uk-text-emphasis">
-      ({{player.role}}) {{player.username}}
+    <div v-if="gameSummary">
+      <h2>{{resultText}}</h2>
+      <h4>Game Summary</h4>
+      <div v-for="player in gameSummary.players" :key="player.username"
+        class="uk-text-truncate uk-text-emphasis">
+        ({{player.role}}) {{player.username}}
+      </div>
+    </div>
+    <div v-else>
+      Couldn't fetch game summary
     </div>
     <button
       class="uk-button uk-button-primary uk-margin-top"

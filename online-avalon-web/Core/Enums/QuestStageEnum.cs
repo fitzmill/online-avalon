@@ -8,6 +8,7 @@ namespace online_avalon_web.Core.Enums
         ApproveParty,
         VoteQuest,
         Lake,
-        Assassinate
+        Assassinate,
+        End
     }
 }
