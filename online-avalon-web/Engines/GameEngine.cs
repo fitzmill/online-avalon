@@ -497,7 +497,7 @@ namespace online_avalon_web.Engines
             try
             {
                 return _gameAccessor.GetGames()
-                    .Where(g => g.Active && g.NumPlayers == 0)
+                    .Where(g => g.Active && g.NumPlayers <= 0)
                     .Select(g => g.GameId)
                     .Take
                     (1000).ToList();
